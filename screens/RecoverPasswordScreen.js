@@ -12,7 +12,7 @@ import {
 } from 'react-native';
 
 
-export default function RecoverpasswordScreen() {
+export default function RecoverPasswordScreen() {
   const [correo, setCorreo] = useState('');
 
   const handleRecuperar = () => {
