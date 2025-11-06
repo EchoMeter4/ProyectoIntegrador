@@ -1,6 +1,6 @@
 import {Text, StyleSheet, View, Button} from "react-native";
 import React, {useState} from 'react';
-import CrudScreen from "./CrudScreen";
+import CrudScreen from "./CrudModal";
 import GraphScreen from "./GraphScreen";
 import LoginScreen from "./LoginScreen";
 import NotificationScreen from "./NotificationScreen";
@@ -14,8 +14,6 @@ export default function MenuScreen() {
     switch (screen) {
         case 'graph':
             return <GraphScreen/>
-        case 'crud':
-            return <CrudScreen/>
         case 'login':
             return <LoginScreen/>
         case 'notifications':
@@ -42,10 +40,6 @@ export default function MenuScreen() {
                     <Button
                         title="Graph"
                         onPress={() => setScreen('graph')}
-                    />
-                    <Button
-                        title="CRUD"
-                        onPress={() => setScreen('crud')}
                     />
                     <Button
                         title="Transacciones"
