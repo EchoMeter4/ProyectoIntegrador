@@ -11,28 +11,15 @@ import {
   Image, 
 } from 'react-native';
 
-export default function App() {
-  const [usuario, setUsuario] = useState('');
+
+export default function RecoverpasswordScreen() {
   const [correo, setCorreo] = useState('');
-  const [contrasena, setContrasena] = useState('');
 
-  const handleRegistro = () => {
-    const usuarioLimpio = usuario.trim();
+  const handleRecuperar = () => {
     const correoLimpio = correo.trim();
-    const contrasenaLimpia = contrasena.trim();
-
-    if (!usuarioLimpio && !correoLimpio && !contrasenaLimpia) {
-      alert('Error: rellena todos los campos');
-      return; 
-    } 
-
-    if (!usuarioLimpio) {
-      alert('Error: te falta tu nombre de usuario');
-      return; 
-    } 
 
     if (!correoLimpio) {
-      alert('Error: le falta su correo');
+      alert('Error: Escribe tu correo electrónico');
       return;
     }
     if (!correoLimpio.includes('@')) {
@@ -43,14 +30,9 @@ export default function App() {
       alert('Error: el correo debe contener ".com"');
       return;
     }
-
-    if (!contrasenaLimpia) {
-      alert('Error: te falta la contraseña');
-      return;
-    } 
     
-    alert('Éxito: ¡Cuenta creada exitosamente!');
-    console.log('Registro simulado OK:', { usuarioLimpio, correoLimpio, contrasenaLimpia });
+    alert('Éxito: Se ha enviado un correo de recuperación a ' + correoLimpio);
+    console.log('Recuperación simulada OK:', { correoLimpio });
   };
 
   return (
@@ -72,18 +54,8 @@ export default function App() {
           </View>
           
           <View style={styles.card}>
-            <Text style={styles.title}>Bienvenido</Text>
-            <Text style={styles.subtitle}>Crea Tu Nuevo Usuario</Text>
-
-            <Text style={styles.label}>Nombre de Usuario</Text>
-            <TextInput
-              style={styles.input}
-              placeholder="Nombre de Usuario"
-              placeholderTextColor={COLORS.placeholderText}
-              value={usuario}
-              onChangeText={setUsuario} 
-              autoCapitalize="none"
-            />
+            <Text style={styles.title}>Recuperar Contraseña</Text>
+            <Text style={styles.subtitle}>Ingresa tu correo electrónico</Text>
 
             <Text style={styles.label}>Correo Electronico</Text>
             <TextInput
@@ -96,29 +68,12 @@ export default function App() {
               keyboardType="email-address"
             />
 
-            <Text style={styles.label}>Contraseña</Text>
-            <View style={styles.passwordContainer}>
-              <TextInput
-                style={styles.passwordInput}
-                placeholder="Contraseña"
-                placeholderTextColor={COLORS.placeholderText}
-                value={contrasena}
-                onChangeText={setContrasena} 
-                secureTextEntry={true} 
-              />
-              
-              <Image
-                source={require('../assets/ojo.png')}
-                style={styles.eyeIconImage}
-              />
-            </View>
-
-            <TouchableOpacity style={styles.primaryButton} onPress={handleRegistro}>
-              <Text style={styles.primaryButtonText}>Crear Cuenta</Text>
+            <TouchableOpacity style={styles.primaryButton} onPress={handleRecuperar}>
+              <Text style={styles.primaryButtonText}>Enviar Correo</Text>
             </TouchableOpacity>
             
             <TouchableOpacity style={styles.secondaryButton}>
-              <Text style={styles.secondaryButtonText}>Iniciar sesión</Text>
+              <Text style={styles.secondaryButtonText}>Volver a Iniciar sesión</Text>
             </TouchableOpacity>
           </View>
         </ScrollView>
@@ -153,11 +108,6 @@ const styles = StyleSheet.create({
   logoImage: {
     width: 180,
     height: 180,
-  },
-  eyeIconImage: {
-    width: 24,
-    height: 24,
-    marginRight: 5,
   },
   card: {
     width: '90%',
@@ -197,24 +147,9 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     paddingHorizontal: 15,
     fontSize: 16,
-    marginBottom: 20, 
+    marginBottom: 25,
     borderColor: COLORS.cardBackground, 
     borderWidth: 1,
-  },
-  passwordContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: COLORS.white,
-    borderRadius: 10,
-    marginBottom: 25, 
-    paddingHorizontal: 15,
-    borderColor: COLORS.cardBackground, 
-    borderWidth: 1,
-  },
-  passwordInput: {
-    flex: 1,
-    paddingVertical: 12,
-    fontSize: 16,
   },
   primaryButton: {
     backgroundColor: COLORS.primaryText,
