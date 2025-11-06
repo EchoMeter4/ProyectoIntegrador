@@ -1,13 +1,19 @@
-import React from "react";
-import {View, Text, ScrollView, StyleSheet, Image} from "react-native";
+import React, {useState} from "react";
+import {Image, ScrollView, StyleSheet, Text, View,} from "react-native";
+import Navbar from "../components/Navbar.js";
+import CrudModal from "./CrudModal.js";
 
 export default function graphScreen() {
+    const [showModal, setShowModal] = useState(false);
+    const toggleModal = () => setShowModal(!showModal);
+
     return (
         <View style={styles.page}>
             <View style={styles.header}>
                 <Text style={styles.headerTitle}>Resumen</Text>
-                <Text style={styles.headerSubtitle}>&lt; Noviembre
-                                                         2025 &gt;</Text>
+                <Text style={styles.headerSubtitle}>
+                    &lt; Noviembre 2025 &gt;
+                </Text>
             </View>
 
             <ScrollView contentContainerStyle={styles.scrollArea}>
@@ -21,7 +27,6 @@ export default function graphScreen() {
 
                 <View style={styles.card}>
                     <Text style={styles.cardTitle}>Gastos</Text>
-
                     <Image
                         style={[styles.image, {height: 270}]}
                         source={require("../assets/gastos.png")}
@@ -89,21 +94,34 @@ export default function graphScreen() {
                     </View>
                 </View>
             </ScrollView>
+            <Navbar toggleModal={toggleModal}/>
+            <CrudModal visible={showModal} setVisible={setShowModal}/>
         </View>
     );
 }
+const BG = "#D2EFEC";
 
 const styles = StyleSheet.create({
-    page: {flex: 1, backgroundColor: "#D2EFEC"},
+    page: {flex: 1, backgroundColor: BG},
     header: {
         alignItems: "center",
         backgroundColor: "#338B84",
         paddingTop: 60,
         paddingBottom: 15,
     },
-    headerTitle: {fontSize: 18, fontWeight: "bold", color: "white"},
-    headerSubtitle: {color: "white"},
-    scrollArea: {padding: 16},
+    headerTitle: {
+        fontSize: 18,
+        fontWeight: "bold", color: "white"
+    },
+    headerSubtitle: {
+        color: "white"
+    },
+
+    scrollArea: {
+        padding: 16,
+        paddingBottom: 120
+    },
+
     card: {
         backgroundColor: "white",
         borderRadius: 16,
@@ -117,8 +135,17 @@ const styles = StyleSheet.create({
         fontWeight: "700",
         marginBottom: 10
     },
-    image: {width: "100%", height: 150, resizeMode: "center", borderRadius: 12},
-    sectionTitle: {color: "#0F6D66", fontWeight: "600", marginVertical: 8},
+    image: {
+        width: "100%",
+        height: 150,
+        resizeMode: "center",
+        borderRadius: 12
+    },
+    sectionTitle: {
+        color: "#0F6D66",
+        fontWeight: "600",
+        marginVertical: 8
+    },
     row: {
         flexDirection: "row",
         alignItems: "center",
@@ -132,9 +159,23 @@ const styles = StyleSheet.create({
         backgroundColor: "#0F6D66",
         marginRight: 8,
     },
-    name: {flex: 1, color: "#1A1A1A"},
-    label: {flex: 1, color: "#1A1A1A"},
-    rightContainer: {alignItems: "flex-end"},
-    money: {fontWeight: "600", color: "#1A1A1A"},
-    note: {fontSize: 12, color: "#6A8B90"},
+    name: {
+        flex: 1,
+        color: "#1A1A1A"
+    },
+    label: {
+        flex: 1,
+        color: "#1A1A1A"
+    },
+    rightContainer: {
+        alignItems: "flex-end"
+    },
+    money: {
+        fontWeight: "600",
+        color: "#1A1A1A"
+    },
+    note: {
+        fontSize: 12,
+        color: "#6A8B90"
+    },
 });
