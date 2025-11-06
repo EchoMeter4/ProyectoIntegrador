@@ -2,6 +2,7 @@ import React, {useState} from "react";
 import {Image, ScrollView, StyleSheet, Text, View,} from "react-native";
 import Navbar from "../components/Navbar.js";
 import CrudModal from "./CrudModal.js";
+import AppHeader from "../components/AppHeader";
 
 export default function graphScreen() {
     const [showModal, setShowModal] = useState(false);
@@ -9,12 +10,7 @@ export default function graphScreen() {
 
     return (
         <View style={styles.page}>
-            <View style={styles.header}>
-                <Text style={styles.headerTitle}>Resumen</Text>
-                <Text style={styles.headerSubtitle}>
-                    &lt; Noviembre 2025 &gt;
-                </Text>
-            </View>
+            <AppHeader/>
 
             <ScrollView contentContainerStyle={styles.scrollArea}>
                 <View style={styles.card}>
@@ -103,25 +99,11 @@ const BG = "#D2EFEC";
 
 const styles = StyleSheet.create({
     page: {flex: 1, backgroundColor: BG},
-    header: {
-        alignItems: "center",
-        backgroundColor: "#338B84",
-        paddingTop: 60,
-        paddingBottom: 15,
-    },
-    headerTitle: {
-        fontSize: 18,
-        fontWeight: "bold", color: "white"
-    },
-    headerSubtitle: {
-        color: "white"
-    },
-
     scrollArea: {
         padding: 16,
+
         paddingBottom: 120
     },
-
     card: {
         backgroundColor: "white",
         borderRadius: 16,
