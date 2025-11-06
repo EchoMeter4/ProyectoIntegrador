@@ -1,6 +1,5 @@
 import {Text, StyleSheet, View, Button} from "react-native";
 import React, {useState} from 'react';
-import CrudScreen from "./CrudModal";
 import GraphScreen from "./GraphScreen";
 import LoginScreen from "./LoginScreen";
 import NotificationScreen from "./NotificationScreen";
