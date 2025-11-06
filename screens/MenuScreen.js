@@ -6,6 +6,7 @@ import NotificationScreen from "./NotificationScreen";
 import ProfileScreen from "./ProfileScreen";
 import RegisterScreen from "./RegisterScreen";
 import TransactionScreen from "./TransactionScreen";
+import RecoverPasswordScreen from "./RecoverPasswordScreen";
 
 export default function MenuScreen() {
   const [screen, setScreen] = useState("menu");
@@ -15,6 +16,8 @@ export default function MenuScreen() {
             return <GraphScreen/>
         case 'login':
             return <LoginScreen/>
+        case 'password':
+            return <RecoverPasswordScreen/>
         case 'notifications':
             return <NotificationScreen/>
         case 'profile':
@@ -29,12 +32,16 @@ export default function MenuScreen() {
                 <View style={styles.container}>
                     <Text>Menú de Prácticas</Text>
                     <Button
+                        title="Registro"
+                        onPress={() => setScreen('register')}
+                    />
+                    <Button
                         title="Login"
                         onPress={() => setScreen('login')}
                     />
                     <Button
-                        title="Registro"
-                        onPress={() => setScreen('register')}
+                        title="Recuperar Contraseña"
+                        onPress={() => setScreen('password')}
                     />
                     <Button
                         title="Graph"
