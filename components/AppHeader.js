@@ -1,5 +1,6 @@
-import {StyleSheet, Text, View} from "react-native";
+import {Alert, StyleSheet, Text, TouchableOpacity, View} from "react-native";
 import React from "react";
+import {MaterialIcons} from "@expo/vector-icons";
 
 export default function AppHeader() {
     return (
@@ -8,6 +9,12 @@ export default function AppHeader() {
             <Text style={styles.headerSubtitle}>
                 &lt; Noviembre 2025 &gt;
             </Text>
+            <TouchableOpacity
+                onPress={() => Alert.alert('Configuración')}
+                style={styles.iconConfig}
+            >
+                <MaterialIcons name="settings" size={22} color="#ffffff"/>
+            </TouchableOpacity>
         </View>
     )
 }
@@ -25,5 +32,10 @@ const styles = StyleSheet.create({
     },
     headerSubtitle: {
         color: "white"
+    },
+    iconConfig: {
+        position: 'absolute',
+        right: 30,
+        top: 70,
     },
 })
