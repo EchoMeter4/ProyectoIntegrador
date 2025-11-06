@@ -77,12 +77,12 @@ const styles = StyleSheet.create({
     },
     bottomWrap: {
         position: "absolute",
-        left: 16,
-        right: 16,
-        bottom: 16,
+        left: 30,
+        right: 30,
+        bottom: 20,
     },
     bottomNav: {
-        backgroundColor: "#EEF3F3",
+        backgroundColor: "rgba(238, 243, 243, 0.97)",
         borderRadius: 22,
         paddingVertical: 10,
         paddingHorizontal: 14,
