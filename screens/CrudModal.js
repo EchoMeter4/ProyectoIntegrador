@@ -1,4 +1,4 @@
-import React, {useState} from "react";
+import React, {useEffect, useState} from "react";
 import {
     Alert,
     Modal,
@@ -11,8 +11,16 @@ import {
     View,
 } from "react-native";
 
-export default function CrudModal({visible, setVisible}) {
-    const [entryType, setEntryType] = useState("gasto");
+export default function CrudModal(
+    {visible, setVisible, operation = "crear", type = "gasto"},
+) {
+    const [entryType, setEntryType] = useState(type);
+    const [operationType, setOperationType] = useState(type);
+
+    useEffect(() => {
+        setEntryType(type)
+        setOperationType(operation)
+    }, [type, operation]);
 
     const onSave = () => {
         Alert.alert(`${entryType} guardado`);
@@ -25,36 +33,51 @@ export default function CrudModal({visible, setVisible}) {
             />
             <View style={styles.modal}>
                 <View style={styles.tabs}>
-                    <TouchableOpacity
-                        onPress={() => setEntryType("ingreso")}
-                        style={[styles.tabBtn, entryType === "ingreso" && styles.tabBtnActive]}
-                    >
-                        <Text
-                            style={[styles.tabText, entryType === "ingreso" && styles.tabTextActive]}
-                        >
-                            Ingreso
-                        </Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity
-                        onPress={() => setEntryType("gasto")}
-                        style={[styles.tabBtn, entryType === "gasto" && styles.tabBtnActive]}
-                    >
-                        <Text
-                            style={[styles.tabText, entryType === "gasto" && styles.tabTextActive]}
-                        >
-                            Gasto
-                        </Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity
-                        onPress={() => setEntryType("presupuesto")}
-                        style={[styles.tabBtn, entryType === "presupuesto" && styles.tabBtnActive]}
-                    >
-                        <Text
-                            style={[styles.tabText, entryType === "presupuesto" && styles.tabTextActive]}
-                        >
-                            Presupuesto
-                        </Text>
-                    </TouchableOpacity>
+                    {
+                        entryType !== 'ingreso' && operationType !== 'crear' ? null :
+                            (
+                                <TouchableOpacity
+                                    onPress={() => setEntryType("ingreso")}
+                                    style={[styles.tabBtn, entryType === "ingreso" && styles.tabBtnActive]}
+                                >
+                                    <Text
+                                        style={[styles.tabText, entryType === "ingreso" && styles.tabTextActive]}
+                                    >
+                                        Ingreso
+                                    </Text>
+                                </TouchableOpacity>
+                            )
+                    }
+                    {
+                        entryType !== 'gasto' && operationType !== 'crear' ? null :
+                            (
+                                <TouchableOpacity
+                                    onPress={() => setEntryType("gasto")}
+                                    style={[styles.tabBtn, entryType === "gasto" && styles.tabBtnActive]}
+                                >
+                                    <Text
+                                        style={[styles.tabText, entryType === "gasto" && styles.tabTextActive]}
+                                    >
+                                        Gasto
+                                    </Text>
+                                </TouchableOpacity>
+                            )
+                    }
+                    {
+                        entryType !== 'presupuesto' && operationType !== 'crear' ? null :
+                            (
+                                <TouchableOpacity
+                                    onPress={() => setEntryType("presupuesto")}
+                                    style={[styles.tabBtn, entryType === "presupuesto" && styles.tabBtnActive]}
+                                >
+                                    <Text
+                                        style={[styles.tabText, entryType === "presupuesto" && styles.tabTextActive]}
+                                    >
+                                        Presupuesto
+                                    </Text>
+                                </TouchableOpacity>
+                            )
+                    }
                 </View>
 
                 <ScrollView contentContainerStyle={styles.body}>
