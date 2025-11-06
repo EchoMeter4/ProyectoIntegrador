@@ -111,7 +111,10 @@ const styles = StyleSheet.create({
     },
     cardSection: {
         marginTop: -30,
-        padding: 16
+        marginHorizontal: 16,
+        borderRadius: 16,
+        paddingVertical: 14,
+        paddingHorizontal: 6,
     },
     card: {
         backgroundColor: "white",
@@ -119,6 +122,11 @@ const styles = StyleSheet.create({
         paddingVertical: 20,
         paddingHorizontal: 40,
         marginBottom: 14,
+        shadowColor: "#000",
+        shadowOpacity: 0.06,
+        shadowRadius: 8,
+        shadowOffset: {width: 0, height: 2},
+        elevation: 2,
     },
     cardTitle: {
         color: "#183236",
