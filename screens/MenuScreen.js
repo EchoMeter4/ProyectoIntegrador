@@ -8,7 +8,7 @@ import RegisterScreen from "./RegisterScreen";
 import TransactionScreen from "./TransactionScreen";
 
 export default function MenuScreen() {
-    const [screen, setScreen] = useState('menu');
+  const [screen, setScreen] = useState("menu");
 
     switch (screen) {
         case 'graph':
@@ -58,10 +58,26 @@ export default function MenuScreen() {
 }
 
 const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        backgroundColor: '#fff',
-        alignItems: 'center',
-        justifyContent: 'center',
-    },
+  container: {
+    flex: 1,
+    backgroundColor: "#FFF6F9",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  title: {
+    fontSize: 22,
+    fontWeight: "bold",
+    color: "#8B3A62",
+    marginBottom: 25,
+  },
+  buttonContainer: {
+    alignItems: "center",
+  },
+  buttonSquare: {
+    width: 180,
+    height: 45,
+    marginVertical: 6,
+    borderRadius: 0,
+    overflow: "hidden",
+  },
 });
