@@ -10,83 +10,87 @@ export default function graphScreen() {
 
     return (
         <View style={styles.page}>
-            <AppHeader/>
-
             <ScrollView contentContainerStyle={styles.scrollArea}>
-                <View style={styles.card}>
-                    <Text style={styles.cardTitle}>Gastos e Ingresos</Text>
-                    <Image
-                        style={styles.image}
-                        source={require("../assets/gastos-ingresos.png")}
-                    />
-                </View>
+                <AppHeader/>
+                <View style={styles.cardSection}>
+                    <View style={styles.card}>
+                        <Text style={styles.cardTitle}>Gastos e Ingresos</Text>
+                        <Image
+                            style={styles.image}
+                            source={require("../assets/gastos-ingresos.png")}
+                        />
+                    </View>
 
-                <View style={styles.card}>
-                    <Text style={styles.cardTitle}>Gastos</Text>
-                    <Image
-                        style={[styles.image, {height: 270}]}
-                        source={require("../assets/gastos.png")}
-                    />
+                    <View style={styles.card}>
+                        <Text style={styles.cardTitle}>Gastos</Text>
+                        <Image
+                            style={[styles.image, {height: 270}]}
+                            source={require("../assets/gastos.png")}
+                        />
 
-                    <Text style={styles.sectionTitle}>Categorías</Text>
+                        <Text style={styles.sectionTitle}>Categorías</Text>
 
-                    <View style={styles.row}>
-                        <View style={styles.circle}/>
-                        <Text style={styles.name}>Escuela</Text>
-                        <View style={styles.rightContainer}>
-                            <Text style={styles.money}>$5,091.00</Text>
-                            <Text style={styles.note}>70% del presupuesto</Text>
+                        <View style={styles.row}>
+                            <View style={styles.circle}/>
+                            <Text style={styles.name}>Escuela</Text>
+                            <View style={styles.rightContainer}>
+                                <Text style={styles.money}>$5,091.00</Text>
+                                <Text style={styles.note}>70% del
+                                                          presupuesto</Text>
+                            </View>
+                        </View>
+
+                        <View style={styles.row}>
+                            <View style={styles.circle}/>
+                            <Text style={styles.label}>Renta</Text>
+                            <View style={styles.rightContainer}>
+                                <Text style={styles.money}>$5,091.00</Text>
+                                <Text style={styles.note}>100% del
+                                                          presupuesto</Text>
+                            </View>
+                        </View>
+
+                        <View style={styles.row}>
+                            <View style={styles.circle}/>
+                            <Text style={styles.name}>Comida</Text>
+                            <View style={styles.rightContainer}>
+                                <Text style={styles.money}>$4,242.50</Text>
+                                <Text style={styles.note}>87% del
+                                                          presupuesto</Text>
+                            </View>
+                        </View>
+
+                        <View style={styles.row}>
+                            <View style={styles.circle}/>
+                            <Text style={styles.name}>Transporte</Text>
+                            <View style={styles.rightContainer}>
+                                <Text style={styles.money}>$2,545.50</Text>
+                                <Text style={styles.note}>99% del
+                                                          presupuesto</Text>
+                            </View>
                         </View>
                     </View>
 
-                    <View style={styles.row}>
-                        <View style={styles.circle}/>
-                        <Text style={styles.label}>Renta</Text>
-                        <View style={styles.rightContainer}>
-                            <Text style={styles.money}>$5,091.00</Text>
-                            <Text style={styles.note}>100% del
-                                                      presupuesto</Text>
-                        </View>
-                    </View>
+                    <View style={styles.card}>
+                        <Text style={styles.cardTitle}>Ingresos</Text>
+                        <Image
+                            style={[styles.image, {height: 160}]}
+                            source={require("../assets/ingresos.png")}
+                        />
 
-                    <View style={styles.row}>
-                        <View style={styles.circle}/>
-                        <Text style={styles.name}>Comida</Text>
-                        <View style={styles.rightContainer}>
+                        <Text style={styles.sectionTitle}>Categorías</Text>
+
+                        <View style={styles.row}>
+                            <View style={styles.circle}/>
+                            <Text style={styles.name}>Salario</Text>
+                            <Text style={styles.money}>$5,091.00</Text>
+                        </View>
+
+                        <View style={styles.row}>
+                            <View style={styles.circle}/>
+                            <Text style={styles.name}>Otros</Text>
                             <Text style={styles.money}>$4,242.50</Text>
-                            <Text style={styles.note}>87% del presupuesto</Text>
                         </View>
-                    </View>
-
-                    <View style={styles.row}>
-                        <View style={styles.circle}/>
-                        <Text style={styles.name}>Transporte</Text>
-                        <View style={styles.rightContainer}>
-                            <Text style={styles.money}>$2,545.50</Text>
-                            <Text style={styles.note}>99% del presupuesto</Text>
-                        </View>
-                    </View>
-                </View>
-
-                <View style={styles.card}>
-                    <Text style={styles.cardTitle}>Ingresos</Text>
-                    <Image
-                        style={[styles.image, {height: 160}]}
-                        source={require("../assets/ingresos.png")}
-                    />
-
-                    <Text style={styles.sectionTitle}>Categorías</Text>
-
-                    <View style={styles.row}>
-                        <View style={styles.circle}/>
-                        <Text style={styles.name}>Salario</Text>
-                        <Text style={styles.money}>$5,091.00</Text>
-                    </View>
-
-                    <View style={styles.row}>
-                        <View style={styles.circle}/>
-                        <Text style={styles.name}>Otros</Text>
-                        <Text style={styles.money}>$4,242.50</Text>
                     </View>
                 </View>
             </ScrollView>
@@ -98,11 +102,16 @@ export default function graphScreen() {
 const BG = "#D2EFEC";
 
 const styles = StyleSheet.create({
-    page: {flex: 1, backgroundColor: BG},
+    page: {
+        flex: 1,
+        backgroundColor: BG
+    },
     scrollArea: {
-        padding: 16,
-
-        paddingBottom: 120
+        paddingBottom: 80
+    },
+    cardSection: {
+        marginTop: -30,
+        padding: 16
     },
     card: {
         backgroundColor: "white",
