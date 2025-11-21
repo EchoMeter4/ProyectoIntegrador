@@ -5,6 +5,8 @@ import CrudModal from "./CrudModal.js";
 import AppHeader from "../components/AppHeader";
 
 export default function graphScreen() {
+    const [showModal, setShowModal] = useState(false);
+    const toggleModal = () => setShowModal(!showModal);
 
     return (
         <View style={styles.page}>
@@ -92,6 +94,8 @@ export default function graphScreen() {
                     </View>
                 </View>
             </ScrollView>
+            <Navbar toggleModal={toggleModal}/>
+            <CrudModal visible={showModal} setVisible={setShowModal}/>
         </View>
     );
 }
