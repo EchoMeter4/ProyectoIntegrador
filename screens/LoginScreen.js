@@ -8,11 +8,11 @@ import {
   ScrollView,
   SafeAreaView,
   StatusBar,
-  Image, 
+  Image,
 } from 'react-native';
 
 
-export default function LoginScreen({ navigation }) { 
+export default function LoginScreen({ navigation }) {
   const [usuario, setUsuario] = useState('');
   const [contrasena, setContrasena] = useState('');
 
@@ -22,55 +22,50 @@ export default function LoginScreen({ navigation }) {
 
     if (!usuarioLimpio && !contrasenaLimpia) {
       alert('Error: llene los campos');
-    } 
+    }
     else if (!usuarioLimpio && contrasenaLimpia) {
       alert('Error: te falta el usuario');
-    } 
+    }
     else if (usuarioLimpio && !contrasenaLimpia) {
       alert('Error: te falta tu contraseña');
-    } 
+    }
     else {
-      
+
       console.log('Inicio de sesión simulado OK:', { usuarioLimpio, contrasenaLimpia });
-      
-      
-      navigation.replace('Graph'); 
+
+
+      navigation.replace('Graph');
     }
   };
 
   return (
     <SafeAreaView style={styles.safeArea}>
       <StatusBar barStyle="light-content" backgroundColor={COLORS.backgroundMain} />
-      
-        <ScrollView 
+
+        <ScrollView
           contentContainerStyle={styles.scrollContainer}
-          keyboardShouldPersistTaps="always" 
+          keyboardShouldPersistTaps="always"
         >
-          
+
           <View style={styles.logoContainer}>
-             
+
             <Image
-              source={require('../assets/logo.png')} 
+              source={require('../assets/logo.png')}
               style={styles.logoImage}
-              resizeMode="contain" 
+              resizeMode="contain"
             />
           </View>
-          
-          <View style={styles.card}>
-            <TouchableOpacity
-              style={styles.loginButton}
-              onPress={() => navigation.navigate('Graph')}
-              >
-              <Text style={styles.loginButtonText}>Iniciar sesión </Text>
-            </TouchableOpacity>
 
+          <View style={styles.card}>
+            <Text style={styles.title}>Inicio de Sesión</Text>
             <Text style={styles.label}>Usuario o Correo</Text>
+
             <TextInput
               style={styles.input}
               placeholder="Usuario"
               placeholderTextColor={COLORS.placeholderText}
               value={usuario}
-              onChangeText={setUsuario} 
+              onChangeText={setUsuario}
               autoCapitalize="none"
             />
             <Text style={styles.label}>Contraseña</Text>
@@ -81,10 +76,10 @@ export default function LoginScreen({ navigation }) {
                 placeholder="Contraseña"
                 placeholderTextColor={COLORS.placeholderText}
                 value={contrasena}
-                onChangeText={setContrasena} 
-                secureTextEntry={true} 
+                onChangeText={setContrasena}
+                secureTextEntry={true}
               />
-              
+
               <Image
                 source={require('../assets/ojo.png')}
                 style={styles.eyeIconImage}
@@ -92,42 +87,48 @@ export default function LoginScreen({ navigation }) {
             </View>
 
             <TouchableOpacity style={styles.loginButton} onPress={handleLogin}>
-              <Text style={styles.loginButtonText}>Iniciar</Text>
+              <Text style={styles.loginButtonText}>Iniciar Sesión</Text>
             </TouchableOpacity>
-            
+
             <TouchableOpacity style={styles.recoverPasswordButton}>
               <Text style={styles.recoverPasswordText}>Recuperar Contraseña</Text>
             </TouchableOpacity>
+            <TouchableOpacity
+                style={styles.recoverPasswordButton}
+                onPress={() => navigation.navigate('Register')}
+            >
+              <Text style={styles.recoverPasswordText}>Registrarse</Text>
+            </TouchableOpacity>
           </View>
         </ScrollView>
-      
+
     </SafeAreaView>
   );
 }
 
 
 const COLORS = {
-  backgroundMain: '#3B8A84', 
-  cardBackground: '#E0F2F1', 
-  primaryText: '#004D40',    
+  backgroundMain: '#3B8A84',
+  cardBackground: '#E0F2F1',
+  primaryText: '#004D40',
   placeholderText: '#A0A0A0',
   white: '#FFFFFF',
 };
 
 const styles = StyleSheet.create({
   // ... el resto de tus estilos ...
-  safeArea: { 
-    flex: 1, 
+  safeArea: {
+    flex: 1,
     backgroundColor: COLORS.backgroundMain,
   },
   scrollContainer: {
     flexGrow: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    paddingVertical: 30, 
+    paddingVertical: 30,
   },
   logoContainer: {
-    marginBottom: 50, 
+    marginBottom: 50,
     alignItems: 'center',
   },
   logoImage: {
@@ -141,11 +142,11 @@ const styles = StyleSheet.create({
   },
   card: {
     width: '90%',
-    maxWidth: 400, 
+    maxWidth: 400,
     backgroundColor: COLORS.cardBackground,
     borderRadius: 20,
     padding: 25,
-    paddingBottom: 35, 
+    paddingBottom: 35,
     alignItems: 'stretch',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 4, },
@@ -154,7 +155,7 @@ const styles = StyleSheet.create({
     elevation: 8,
   },
   title: {
-    fontSize: 24, 
+    fontSize: 24,
     fontWeight: 'bold',
     color: COLORS.primaryText,
     textAlign: 'center',
@@ -172,8 +173,8 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     paddingHorizontal: 15,
     fontSize: 16,
-    marginBottom: 20, 
-    borderColor: COLORS.cardBackground, 
+    marginBottom: 20,
+    borderColor: COLORS.cardBackground,
     borderWidth: 1,
   },
   passwordContainer: {
@@ -181,9 +182,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: COLORS.white,
     borderRadius: 10,
-    marginBottom: 25, 
+    marginBottom: 25,
     paddingHorizontal: 15,
-    borderColor: COLORS.cardBackground, 
+    borderColor: COLORS.cardBackground,
     borderWidth: 1,
   },
   passwordInput: {
