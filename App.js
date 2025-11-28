@@ -9,17 +9,32 @@ import CrudModal from "./screens/CrudModal";
 import React, {useState} from "react";
 
 const MainStack = createNativeStackNavigator();
+
 export default function App() {
     const [showModal, setShowModal] = useState(false);
+    
+    const [currentRoute, setCurrentRoute] = useState('Login'); 
+
     const toggleModal = () => setShowModal(!showModal);
 
     return (
-        <NavigationContainer>
+        <NavigationContainer
+            
+            onStateChange={(state) => {
+                
+                const routeName = state?.routes[state.index]?.name;
+                setCurrentRoute(routeName);
+            }}
+        >
             <MainStack.Navigator
                 id='mainStack'
-                initialRouteName='Graph'
+                initialRouteName='Login'
                 screenOptions={{headerShown: false}}
             >
+                <MainStack.Screen
+                    name='Login'
+                    component={LoginScreen}
+                />
                 <MainStack.Screen
                     name='Graph'
                     component={GraphScreen}
@@ -35,9 +50,15 @@ export default function App() {
                     component={ProfileScreen}
                 />
             </MainStack.Navigator>
-            <Navbar toggleModal={toggleModal}/>
-            <CrudModal visible={showModal} setVisible={setShowModal}/>
+
+           
+            {currentRoute !== 'Login' && (
+                <>
+                    <Navbar toggleModal={toggleModal}/>
+                    <CrudModal visible={showModal} setVisible={setShowModal}/>
+                </>
+            )}
+            
         </NavigationContainer>
     )
 }
-
