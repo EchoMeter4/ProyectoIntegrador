@@ -1,14 +1,6 @@
 import React, {useEffect, useState} from "react";
 import {
-    Alert,
-    Modal,
-    Pressable,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View,
+    Alert, Modal, Pressable, ScrollView, StyleSheet,  Text, TextInput, TouchableOpacity, View,
 } from "react-native";
 
 export default function CrudModal(

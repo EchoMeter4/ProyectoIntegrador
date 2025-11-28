@@ -53,7 +53,13 @@ export default function App() {
           </View>
           
           <View style={styles.card}>
-            <Text style={styles.title}>Inicio de Sesión</Text>
+            <TouchableOpacity
+              style={styles.loginButton}
+              onPress={() => navigation.navigate('Graph')}
+              >
+              <Text style={styles.loginButtonText}>Iniciar sesión </Text>
+            </TouchableOpacity>
+
             <Text style={styles.label}>Usuario o Correo</Text>
             <TextInput
               style={styles.input}
