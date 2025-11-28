@@ -11,7 +11,8 @@ import {
   Image, 
 } from 'react-native';
 
-export default function App() {
+
+export default function LoginScreen({ navigation }) { 
   const [usuario, setUsuario] = useState('');
   const [contrasena, setContrasena] = useState('');
 
@@ -29,8 +30,11 @@ export default function App() {
       alert('Error: te falta tu contraseña');
     } 
     else {
-      alert('Éxito: ¡Inicio de sesión simulado!');
+      
       console.log('Inicio de sesión simulado OK:', { usuarioLimpio, contrasenaLimpia });
+      
+      
+      navigation.replace('Graph'); 
     }
   };
 
@@ -43,8 +47,8 @@ export default function App() {
           keyboardShouldPersistTaps="always" 
         >
           
-         
           <View style={styles.logoContainer}>
+             
             <Image
               source={require('../assets/logo.png')} 
               style={styles.logoImage}
@@ -101,6 +105,7 @@ export default function App() {
   );
 }
 
+
 const COLORS = {
   backgroundMain: '#3B8A84', 
   cardBackground: '#E0F2F1', 
@@ -110,6 +115,7 @@ const COLORS = {
 };
 
 const styles = StyleSheet.create({
+  // ... el resto de tus estilos ...
   safeArea: { 
     flex: 1, 
     backgroundColor: COLORS.backgroundMain,
