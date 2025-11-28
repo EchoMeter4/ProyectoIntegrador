@@ -1,8 +1,11 @@
 import {Alert, StyleSheet, Text, TouchableOpacity, View} from "react-native";
 import React from "react";
 import {MaterialIcons} from "@expo/vector-icons";
+import {useNavigation} from "@react-navigation/native";
 
 export default function AppHeader() {
+    const navigation = useNavigation();
+
     return (
         <View style={styles.header}>
             <Text style={styles.headerTitle}>Resumen</Text>
@@ -10,7 +13,7 @@ export default function AppHeader() {
                 &lt; Noviembre 2025 &gt;
             </Text>
             <TouchableOpacity
-                onPress={() => Alert.alert('Configuración')}
+                onPress={() => navigation.navigate('Profile')}
                 style={styles.iconConfig}
             >
                 <MaterialIcons name="settings" size={22} color="#ffffff"/>

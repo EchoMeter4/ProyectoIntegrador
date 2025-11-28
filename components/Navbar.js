@@ -1,12 +1,15 @@
 import {Alert, StyleSheet, Text, TouchableOpacity, View} from 'react-native';
+import {useNavigation} from "@react-navigation/native";
 
 export default function navbar({toggleModal}) {
+    const navigation = useNavigation();
+
     return (
         <View style={styles.bottomWrap}>
             <View style={styles.bottomNav}>
                 <TouchableOpacity
                     style={styles.navItem}
-                    onPress={() => Alert.alert("Grafica")}
+                    onPress={() => navigation.navigate('List')}
                 >
                     <View style={styles.iconBubble}>
                         <Text style={styles.iconText}>≡</Text>
@@ -16,7 +19,7 @@ export default function navbar({toggleModal}) {
 
                 <TouchableOpacity
                     style={styles.navItem}
-                    onPress={() => Alert.alert("Grafica")}
+                    onPress={() => navigation.navigate('Graph')}
                 >
                     <View style={[styles.iconBubble, styles.iconBubbleActive]}>
                         <Text style={styles.iconText}>📊</Text>
