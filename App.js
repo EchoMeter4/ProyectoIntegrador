@@ -35,10 +35,12 @@ export default function App() {
                 <MainStack.Screen
                     name="Register"
                     component={RegisterScreen}
+                    options={{animation: "none"}}
                 />
                 <MainStack.Screen
                     name="Login"
                     component={LoginScreen}
+                    options={{animation: "none"}}
                 />
                 <MainStack.Screen
                     name="Graph"

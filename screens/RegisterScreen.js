@@ -10,8 +10,11 @@ import {
   StatusBar,
   Image, 
 } from 'react-native';
+import {useNavigation} from "@react-navigation/native";
 
 export default function App() {
+  const navigation = useNavigation();
+
   const [usuario, setUsuario] = useState('');
   const [correo, setCorreo] = useState('');
   const [contrasena, setContrasena] = useState('');
@@ -117,7 +120,10 @@ export default function App() {
               <Text style={styles.primaryButtonText}>Crear Cuenta</Text>
             </TouchableOpacity>
             
-            <TouchableOpacity style={styles.secondaryButton}>
+            <TouchableOpacity
+                style={styles.secondaryButton}
+                onPress={() => navigation.navigate('Login')}
+            >
               <Text style={styles.secondaryButtonText}>Iniciar sesión</Text>
             </TouchableOpacity>
           </View>
