@@ -8,9 +8,14 @@ import {
   ScrollView,
   SafeAreaView,
   StatusBar,
-  Image, 
+  Image, Alert,
 } from 'react-native';
 import {useNavigation} from "@react-navigation/native";
+import {useAuth} from "../components/AuthContext";
+import Usuario from "../models/Usuario";
+import UsuariosController from "../controllers/UsuariosController";
+
+const usuariosController = UsuariosController;
 
 export default function App() {
   const navigation = useNavigation();
@@ -18,42 +23,41 @@ export default function App() {
   const [usuario, setUsuario] = useState('');
   const [correo, setCorreo] = useState('');
   const [contrasena, setContrasena] = useState('');
+  const {login} = useAuth();
 
-  const handleRegistro = () => {
-    const usuarioLimpio = usuario.trim();
-    const correoLimpio = correo.trim();
-    const contrasenaLimpia = contrasena.trim();
+  const handleRegistro = async () => {
+    try {
+      const usuarioLimpio = usuario.trim();
+      const correoLimpio = correo.trim();
+      const contrasenaLimpia = contrasena.trim();
 
-    if (!usuarioLimpio && !correoLimpio && !contrasenaLimpia) {
-      alert('Error: rellena todos los campos');
-      return; 
-    } 
+      if (!usuarioLimpio && !correoLimpio && !contrasenaLimpia) {
+        Alert.alert('Error', 'Rellena todos los campos.');
+        return;
+      }
 
-    if (!usuarioLimpio) {
-      alert('Error: te falta tu nombre de usuario');
-      return; 
-    } 
+      const payload = {
+        alias: usuarioLimpio,
+        correo: correoLimpio,
+        password: contrasenaLimpia,
+      }
+      const nuevoUsuario = new Usuario(payload);
 
-    if (!correoLimpio) {
-      alert('Error: le falta su correo');
-      return;
+      try {
+        nuevoUsuario.validarTodo()
+      } catch (error) {
+        Alert.alert('Error', error.message);
+        return;
+      }
+
+      const newUser = await usuariosController.crearUsuario(nuevoUsuario);
+      await login(newUser);
+      navigation.navigate('Graph');
+    } catch (error) {
+      console.error('Error RegisterScreen: ', error);
+      Alert.alert('Error', 'Algo salió mal!');
     }
-    if (!correoLimpio.includes('@')) {
-      alert('Error: el correo debe contener "@"');
-      return;
-    }
-    if (!correoLimpio.includes('.com')) {
-      alert('Error: el correo debe contener ".com"');
-      return;
-    }
 
-    if (!contrasenaLimpia) {
-      alert('Error: te falta la contraseña');
-      return;
-    } 
-    
-    alert('Éxito: ¡Cuenta creada exitosamente!');
-    console.log('Registro simulado OK:', { usuarioLimpio, correoLimpio, contrasenaLimpia });
   };
 
   return (

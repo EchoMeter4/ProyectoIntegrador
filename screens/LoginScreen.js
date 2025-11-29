@@ -8,16 +8,20 @@ import {
   ScrollView,
   SafeAreaView,
   StatusBar,
-  Image,
+  Image, Alert,
 } from 'react-native';
+import {useAuth} from "../components/AuthContext";
+import Usuario from "../models/Usuario";
+import {isValidEmail} from "../utils/utils";
 
 
 export default function LoginScreen({ navigation }) {
-  const [usuario, setUsuario] = useState('');
+  const [campoUsuario, setcampoUsuario] = useState('');
   const [contrasena, setContrasena] = useState('');
+  const {login} = useAuth();
 
-  const handleLogin = () => {
-    const usuarioLimpio = usuario.trim();
+  const handleLogin = async () => {
+    const usuarioLimpio = campoUsuario.trim();
     const contrasenaLimpia = contrasena.trim();
 
     if (!usuarioLimpio && !contrasenaLimpia) {
@@ -30,11 +34,19 @@ export default function LoginScreen({ navigation }) {
       alert('Error: te falta tu contraseña');
     }
     else {
+      const usuario = new Usuario({password: contrasenaLimpia});
+      if (isValidEmail(usuarioLimpio)) {
+        usuario.correo = campoUsuario;
+      } else {
+        usuario.alias = campoUsuario
+      }
 
-      console.log('Inicio de sesión simulado OK:', { usuarioLimpio, contrasenaLimpia });
-
-
-      navigation.replace('Graph');
+      try {
+        await login(usuario);
+        navigation.replace('Graph');
+      } catch (error) {
+        Alert.alert('Credenciales Incorrectas', error.message);
+      }
     }
   };
 
@@ -64,8 +76,8 @@ export default function LoginScreen({ navigation }) {
               style={styles.input}
               placeholder="Usuario"
               placeholderTextColor={COLORS.placeholderText}
-              value={usuario}
-              onChangeText={setUsuario}
+              value={campoUsuario}
+              onChangeText={setcampoUsuario}
               autoCapitalize="none"
             />
             <Text style={styles.label}>Contraseña</Text>

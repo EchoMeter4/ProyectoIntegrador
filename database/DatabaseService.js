@@ -1,22 +1,22 @@
-import SQLite from 'expo-sqlite';
+import * as SQLite from 'expo-sqlite';
 
-export default class DatabaseService {
+class DatabaseService {
     constructor() {
         this.db = null;
     }
 
     async initialize() {
         this.db = await SQLite.openDatabaseAsync('app.db');
+        await this.createTables();
     }
 
-    async init() {
+    async createTables() {
         await this.db.runAsync(`PRAGMA foreign_keys = ON`);
 
         await this.db.runAsync(
             `CREATE TABLE IF NOT EXISTS usuarios (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
-            nombre  VARCHAR(50)  NOT NULL,
-            usuario VARCHAR(50)  NOT NULL,
+            alias VARCHAR(50)  NOT NULL,
             correo  VARCHAR(100) NOT NULL,
             password VARCHAR(255) NOT NULL
         )`);
@@ -61,3 +61,5 @@ export default class DatabaseService {
         )`);
     }
 }
+
+export default new DatabaseService();
