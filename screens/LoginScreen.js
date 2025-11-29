@@ -33,7 +33,6 @@ export default function LoginScreen({ navigation }) {
       
       console.log('Inicio de sesión simulado OK:', { usuarioLimpio, contrasenaLimpia });
       
-      
       navigation.replace('Graph'); 
     }
   };
@@ -89,9 +88,14 @@ export default function LoginScreen({ navigation }) {
               <Text style={styles.loginButtonText}>Iniciar</Text>
             </TouchableOpacity>
             
-            <TouchableOpacity style={styles.recoverPasswordButton}>
+            
+            <TouchableOpacity 
+                style={styles.recoverPasswordButton}
+                onPress={() => navigation.navigate('Recovery')}
+            >
               <Text style={styles.recoverPasswordText}>Recuperar Contraseña</Text>
             </TouchableOpacity>
+
           </View>
         </ScrollView>
       
@@ -109,7 +113,6 @@ const COLORS = {
 };
 
 const styles = StyleSheet.create({
-  // ... el resto de tus estilos ...
   safeArea: { 
     flex: 1, 
     backgroundColor: COLORS.backgroundMain,
