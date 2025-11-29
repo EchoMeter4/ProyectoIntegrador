@@ -8,33 +8,55 @@ import {
   ScrollView,
   SafeAreaView,
   StatusBar,
-  Image, 
+  Image,
+  Alert, 
 } from 'react-native';
 
 
+import { useAuth } from "../components/AuthContext";
+
 export default function RecoverPasswordScreen({ navigation }) {
   const [correo, setCorreo] = useState('');
+  const [loading, setLoading] = useState(false); 
 
-  const handleRecuperar = () => {
+  
+  const { recuperarPassword } = useAuth(); 
+
+  const handleRecuperar = async () => {
     const correoLimpio = correo.trim();
 
+    
     if (!correoLimpio) {
-      alert('Error: Escribe tu correo electrónico');
+      Alert.alert('Error', 'Escribe tu correo electrónico');
       return;
     }
     if (!correoLimpio.includes('@')) {
-      alert('Error: el correo debe contener "@"');
+      Alert.alert('Error', 'Ingresa un correo válido');
       return;
     }
-    if (!correoLimpio.includes('.com')) {
-      alert('Error: el correo debe contener ".com"');
-      return;
+
+    try {
+      setLoading(true); 
+      
+      
+      await recuperarPassword(correoLimpio);
+      
+      setLoading(false); 
+      
+      
+      Alert.alert(
+        'Correo Enviado',
+        'Recibirás instrucciones para restablecer tu contraseña.',
+        [
+          { text: 'Entendido', onPress: () => navigation.navigate('Login') }
+        ]
+      );
+      
+    } catch (error) {
+      setLoading(false);
+      console.log(error);
+      Alert.alert('Error', 'Hubo un problema al enviar la solicitud.');
     }
-    
-    alert('Éxito: Se ha enviado un correo de recuperación a ' + correoLimpio);
-    console.log('Recuperación simulada OK:', { correoLimpio });
-    
-    
   };
 
   return (
@@ -58,10 +80,10 @@ export default function RecoverPasswordScreen({ navigation }) {
             <Text style={styles.title}>Recuperar Contraseña</Text>
             <Text style={styles.subtitle}>Ingresa tu correo electrónico</Text>
 
-            <Text style={styles.label}>Correo Electronico</Text>
+            <Text style={styles.label}>Correo Electrónico</Text>
             <TextInput
               style={styles.input}
-              placeholder="Correo Electrónico"
+              placeholder="ejemplo@correo.com"
               placeholderTextColor={COLORS.placeholderText}
               value={correo}
               onChangeText={setCorreo} 
@@ -69,10 +91,16 @@ export default function RecoverPasswordScreen({ navigation }) {
               keyboardType="email-address"
             />
 
-            <TouchableOpacity style={styles.primaryButton} onPress={handleRecuperar}>
-              <Text style={styles.primaryButtonText}>Enviar Correo</Text>
+            <TouchableOpacity 
+                
+                style={[styles.primaryButton, loading && {backgroundColor: '#ccc'}]} 
+                onPress={handleRecuperar}
+                disabled={loading} 
+            >
+              <Text style={styles.primaryButtonText}>
+                {loading ? 'Enviando...' : 'Enviar Correo'}
+              </Text>
             </TouchableOpacity>
-            
             
             <TouchableOpacity 
                 style={styles.secondaryButton}
@@ -171,7 +199,7 @@ const styles = StyleSheet.create({
   },
   secondaryButton: {
     alignItems: 'center',
-    padding: 10, 
+    padding: 10,
   },
   secondaryButtonText: {
     color: COLORS.primaryText,

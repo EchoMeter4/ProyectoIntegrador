@@ -10,9 +10,11 @@ export function AuthProvider({children}) {
 
     useEffect(() => {
         const init = async () => {
-            await usuarioController.initialize()
+            
+            if (usuarioController.initialize) {
+                await usuarioController.initialize();
+            }
         };
-
         init();
     }, [])
 
@@ -25,8 +27,24 @@ export function AuthProvider({children}) {
         setUser(null);
     }
 
+    
+    const recuperarPassword = async (email) => {
+        
+        if (usuarioController.recuperarPassword) {
+            return await usuarioController.recuperarPassword(email);
+        }
+        
+        
+        console.log(`Solicitud de recuperación para: ${email}`);
+        
+        
+
+        return true; 
+    }
+
     return (
-        <AuthContext.Provider value={{user, login, logout}}>
+        
+        <AuthContext.Provider value={{user, login, logout, recuperarPassword}}>
             {children}
         </AuthContext.Provider>
     )
