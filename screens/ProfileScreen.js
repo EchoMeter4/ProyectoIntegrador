@@ -36,8 +36,8 @@ export default function ProfileScreen() {
         <View style={styles.avatar}>
           <Ionicons name="person" size={60} color="#2B7A78" />
         </View>
-        <Text style={styles.userName}> {user.alias} </Text>
-        <Text style={styles.userEmail}>{user.correo}</Text>
+        <Text style={styles.userName}> {user?.alias || "Usuario"} </Text>
+        <Text style={styles.userEmail}>{user?.correo || "correo@ejemplo.com"}</Text>
       </View>
 
       <View style={styles.section}>
@@ -57,7 +57,11 @@ export default function ProfileScreen() {
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>Preferencias</Text>
 
-        <TouchableOpacity style={styles.option} onPress={() => handlePress('Notificaciones')}>
+        
+        <TouchableOpacity 
+            style={styles.option} 
+            onPress={() => navigation.navigate('Notifications')}
+        >
           <Text style={styles.optionText}>Notificaciones</Text>
           <Ionicons name="notifications-outline" size={22} color="#2B7A78" />
         </TouchableOpacity>

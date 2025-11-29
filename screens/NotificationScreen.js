@@ -1,62 +1,121 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, Switch, TextInput, TouchableOpacity, Alert } from 'react-native';
+import React, { useState, useEffect } from 'react'; 
+import { 
+  View, 
+  Text, 
+  StyleSheet, 
+  Switch, 
+  TextInput, 
+  TouchableOpacity, 
+  Alert,
+  SafeAreaView,
+  StatusBar,
+  TouchableWithoutFeedback, 
+  Keyboard 
+} from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 
-export default function NotificationScreen() {
-  const [emailAlert, setEmailAlert] = useState(false);
-  const [presupuesto, setPresupuesto] = useState('0');
+
+import { usePreferences } from "../components/PreferencesContext";
+
+export default function NotificationScreen({ navigation }) {
+  
+  const { 
+    emailAlert, 
+    setEmailAlert, 
+    presupuesto, 
+    setPresupuesto,
+    savePreferences 
+  } = usePreferences();
+
+  
 
   const guardarConfiguracion = () => {
-    if (!emailAlert && (!presupuesto || presupuesto === '0')) {
+    
+    if (!emailAlert && (!presupuesto || presupuesto === '0' || presupuesto === '')) {
       Alert.alert('Configuración incompleta', 'Activa las alertas o establece un presupuesto válido.');
       return;
     }
+    
+    Keyboard.dismiss();
+
+    
+    
     Alert.alert(
       'Configuración guardada',
-      `Notificaciones por correo: ${emailAlert ? 'Activadas' : 'Desactivadas'}\n Presupuesto máximo: $${presupuesto}`
+      `Notificaciones: ${emailAlert ? 'ON' : 'OFF'}\nPresupuesto Global: $${presupuesto}`,
+      [
+        { text: "OK", onPress: () => navigation.goBack() } 
+      ]
     );
   };
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Notificaciones automáticas</Text>
+    <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+      <SafeAreaView style={styles.safeArea}>
+        <StatusBar barStyle="light-content" backgroundColor="#58b5a6" />
+        
+        <View style={styles.header}>
+          <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
+             <Ionicons name="arrow-back" size={30} color="#043c3d" />
+          </TouchableOpacity>
+        </View>
 
-      <View style={styles.section}>
-        <Text style={styles.label}>Activar alertas por correo</Text>
-        <Switch
-          value={emailAlert}
-          onValueChange={setEmailAlert}
-          trackColor={{ false: '#ccc', true: '#006d6d' }}
-          thumbColor={emailAlert ? '#00c2b2' : '#f4f3f4'}
-        />
-      </View>
+        <View style={styles.container}>
+          <Text style={styles.title}>Notificaciones automáticas</Text>
 
-      <View style={styles.card}>
-        <Text style={styles.label}>Presupuesto mensual máximo ($)</Text>
-        <TextInput
-          style={styles.input}
-          keyboardType="numeric"
-          value={presupuesto}
-          onChangeText={setPresupuesto}
-        />
-        <Text style={styles.subtext}>
-          Recibirás un correo si superas tu límite mensual
-        </Text>
-      </View>
+          <View style={styles.section}>
+            <Text style={styles.label}>Activar alertas por correo</Text>
+            <Switch
+              value={emailAlert}
+              onValueChange={setEmailAlert} 
+              trackColor={{ false: '#ccc', true: '#006d6d' }}
+              thumbColor={emailAlert ? '#00c2b2' : '#f4f3f4'}
+            />
+          </View>
 
-      <TouchableOpacity style={styles.button} onPress={guardarConfiguracion}>
-        <Text style={styles.buttonText}>GUARDAR CONFIGURACIÓN</Text>
-      </TouchableOpacity>
-    </View>
+          <View style={styles.card}>
+            <Text style={styles.label}>Presupuesto mensual máximo ($)</Text>
+            <TextInput
+              style={styles.input}
+              keyboardType="numeric"
+              value={presupuesto}
+              onChangeText={setPresupuesto} 
+              placeholder="0.00"
+              placeholderTextColor="#5a8585"
+            />
+            <Text style={styles.subtext}>
+              Recibirás un correo si superas tu límite mensual
+            </Text>
+          </View>
+
+          <TouchableOpacity style={styles.button} onPress={guardarConfiguracion}>
+            <Text style={styles.buttonText}>GUARDAR CONFIGURACIÓN</Text>
+          </TouchableOpacity>
+        </View>
+      </SafeAreaView>
+    </TouchableWithoutFeedback>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
+  safeArea: {
     flex: 1,
     backgroundColor: '#58b5a6',
+  },
+  header: {
+    paddingHorizontal: 20,
+    paddingTop: 10,
+    alignItems: 'flex-start',
+  },
+  backButton: {
+    padding: 5,
+  },
+  container: {
+    flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
     padding: 25,
+    marginTop: -40,
   },
   title: {
     fontSize: 24,

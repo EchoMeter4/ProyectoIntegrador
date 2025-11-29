@@ -5,6 +5,7 @@ import {createNativeStackNavigator} from "@react-navigation/native-stack";
 import GraphScreen from "../screens/GraphScreen";
 import ListScreen from "../screens/TransactionScreen";
 import ProfileScreen from "../screens/ProfileScreen";
+import NotificationScreen from "../screens/NotificationScreen";
 
 
 import Navbar from "../components/Navbar";
@@ -16,6 +17,9 @@ export default function AppStack({currentRoute}) {
     const [showModal, setShowModal] = useState(false);
 
     const toggleModal = () => setShowModal(!showModal);
+
+    
+    const screensWithoutNavbar = ['Profile', 'Notifications'];
 
     return (
         <>
@@ -37,14 +41,21 @@ export default function AppStack({currentRoute}) {
                 <MainStack.Screen
                     name="Profile"
                     component={ProfileScreen}
-                    
                     options={{animation: 'none'}} 
+                />
+                <MainStack.Screen 
+                    name="Notifications" 
+                    component={NotificationScreen} 
                 />
             </MainStack.Navigator>
 
             
-            <Navbar toggleModal={toggleModal}/>
-            <CrudModal visible={showModal} setVisible={setShowModal}/>
+            {!screensWithoutNavbar.includes(currentRoute) && (
+                <>
+                    <Navbar toggleModal={toggleModal}/>
+                    <CrudModal visible={showModal} setVisible={setShowModal}/>
+                </>
+            )}
         </>
     )
 }
