@@ -1,10 +1,9 @@
-import React from "react";
-import {Image, ScrollView, StyleSheet, Text, View,} from "react-native";
+import React from 'react'; 
+import { Image, ScrollView, StyleSheet, Text, View } from "react-native";
 import AppHeader from "../components/AppHeader";
 
 export default function GraphScreen() {
-    const [showModal, setShowModal] = useState(false);
-    const toggleModal = () => setShowModal(!showModal);
+    
 
     return (
         <View style={styles.page}>
@@ -33,8 +32,7 @@ export default function GraphScreen() {
                             <Text style={styles.name}>Escuela</Text>
                             <View style={styles.rightContainer}>
                                 <Text style={styles.money}>$5,091.00</Text>
-                                <Text style={styles.note}>70% del
-                                                          presupuesto</Text>
+                                <Text style={styles.note}>70% del presupuesto</Text>
                             </View>
                         </View>
 
@@ -43,8 +41,7 @@ export default function GraphScreen() {
                             <Text style={styles.label}>Renta</Text>
                             <View style={styles.rightContainer}>
                                 <Text style={styles.money}>$5,091.00</Text>
-                                <Text style={styles.note}>100% del
-                                                          presupuesto</Text>
+                                <Text style={styles.note}>100% del presupuesto</Text>
                             </View>
                         </View>
 
@@ -53,8 +50,7 @@ export default function GraphScreen() {
                             <Text style={styles.name}>Comida</Text>
                             <View style={styles.rightContainer}>
                                 <Text style={styles.money}>$4,242.50</Text>
-                                <Text style={styles.note}>87% del
-                                                          presupuesto</Text>
+                                <Text style={styles.note}>87% del presupuesto</Text>
                             </View>
                         </View>
 
@@ -63,8 +59,7 @@ export default function GraphScreen() {
                             <Text style={styles.name}>Transporte</Text>
                             <View style={styles.rightContainer}>
                                 <Text style={styles.money}>$2,545.50</Text>
-                                <Text style={styles.note}>99% del
-                                                          presupuesto</Text>
+                                <Text style={styles.note}>99% del presupuesto</Text>
                             </View>
                         </View>
                     </View>
@@ -92,11 +87,10 @@ export default function GraphScreen() {
                     </View>
                 </View>
             </ScrollView>
-            <Navbar toggleModal={toggleModal}/>
-            <CrudModal visible={showModal} setVisible={setShowModal}/>
         </View>
     );
 }
+
 const BG = "#D2EFEC";
 
 const styles = StyleSheet.create({
@@ -106,7 +100,6 @@ const styles = StyleSheet.create({
     },
     scrollArea: {
         paddingBottom: 80,
-        // backgroundColor: '#338b84'
     },
     cardSection: {
         marginTop: -30,

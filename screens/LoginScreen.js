@@ -11,7 +11,6 @@ import {
   Image, 
 } from 'react-native';
 
-
 export default function LoginScreen({ navigation }) { 
   const [usuario, setUsuario] = useState('');
   const [contrasena, setContrasena] = useState('');
@@ -30,10 +29,7 @@ export default function LoginScreen({ navigation }) {
       alert('Error: te falta tu contraseña');
     } 
     else {
-      
       console.log('Inicio de sesión simulado OK:', { usuarioLimpio, contrasenaLimpia });
-      
-      
       navigation.replace('Graph'); 
     }
   };
@@ -46,9 +42,7 @@ export default function LoginScreen({ navigation }) {
           contentContainerStyle={styles.scrollContainer}
           keyboardShouldPersistTaps="always" 
         >
-          
           <View style={styles.logoContainer}>
-             
             <Image
               source={require('../assets/logo.png')} 
               style={styles.logoImage}
@@ -57,12 +51,8 @@ export default function LoginScreen({ navigation }) {
           </View>
           
           <View style={styles.card}>
-            <TouchableOpacity
-              style={styles.loginButton}
-              onPress={() => navigation.navigate('Graph')}
-              >
-              <Text style={styles.loginButtonText}>Iniciar sesión </Text>
-            </TouchableOpacity>
+            
+            <Text style={styles.title}>Inicio de Sesión</Text>
 
             <Text style={styles.label}>Usuario o Correo</Text>
             <TextInput
@@ -84,7 +74,6 @@ export default function LoginScreen({ navigation }) {
                 onChangeText={setContrasena} 
                 secureTextEntry={true} 
               />
-              
               <Image
                 source={require('../assets/ojo.png')}
                 style={styles.eyeIconImage}
@@ -95,16 +84,18 @@ export default function LoginScreen({ navigation }) {
               <Text style={styles.loginButtonText}>Iniciar</Text>
             </TouchableOpacity>
             
-            <TouchableOpacity style={styles.recoverPasswordButton}>
+            <TouchableOpacity 
+                style={styles.recoverPasswordButton}
+                onPress={() => navigation.navigate('Recovery')}
+            >
               <Text style={styles.recoverPasswordText}>Recuperar Contraseña</Text>
             </TouchableOpacity>
+
           </View>
         </ScrollView>
-      
     </SafeAreaView>
   );
 }
-
 
 const COLORS = {
   backgroundMain: '#3B8A84', 
@@ -115,7 +106,6 @@ const COLORS = {
 };
 
 const styles = StyleSheet.create({
-  // ... el resto de tus estilos ...
   safeArea: { 
     flex: 1, 
     backgroundColor: COLORS.backgroundMain,
