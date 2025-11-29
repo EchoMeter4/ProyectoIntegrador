@@ -1,9 +1,14 @@
 import {StyleSheet} from 'react-native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
+
+
 import GraphScreen from './screens/GraphScreen';
-import LoginScreen from './screens/LoginScreen'; 
+import LoginScreen from './screens/LoginScreen';
 import ListScreen from './screens/TransactionScreen';
-import RecoverPasswordScreen from './screens/RecoverPasswordScreen'; 
+import RecoverPasswordScreen from './screens/RecoverPasswordScreen';
+import ProfileScreen from './screens/ProfileScreen';
+import RegisterScreen from './screens/RegisterScreen'; 
+
 import {NavigationContainer} from "@react-navigation/native";
 import Navbar from "./components/Navbar";
 import CrudModal from "./screens/CrudModal";
@@ -20,7 +25,7 @@ export default function App() {
     const toggleModal = () => setShowModal(!showModal);
 
     
-    const screensWithoutNavbar = ['Login', 'Recovery'];
+    const screensWithoutNavbar = ['Login', 'Recovery', 'Register'];
 
     return (
         <NavigationContainer
@@ -44,14 +49,27 @@ export default function App() {
                     component={RecoverPasswordScreen}
                 />
 
+                
+                <MainStack.Screen
+                    name='Register'
+                    component={RegisterScreen}
+                />
+
                 <MainStack.Screen
                     name='Graph'
                     component={GraphScreen}
                 />
+                
                 <MainStack.Screen
                     name='List'
                     component={ListScreen}
                 />
+
+                <MainStack.Screen
+                    name='Profile'
+                    component={ProfileScreen}
+                />
+
             </MainStack.Navigator>
 
             

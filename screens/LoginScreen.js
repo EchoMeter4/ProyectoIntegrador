@@ -42,6 +42,7 @@ export default function LoginScreen({ navigation }) {
           contentContainerStyle={styles.scrollContainer}
           keyboardShouldPersistTaps="always" 
         >
+          
           <View style={styles.logoContainer}>
             <Image
               source={require('../assets/logo.png')} 
@@ -51,7 +52,6 @@ export default function LoginScreen({ navigation }) {
           </View>
           
           <View style={styles.card}>
-            
             <Text style={styles.title}>Inicio de Sesión</Text>
 
             <Text style={styles.label}>Usuario o Correo</Text>
@@ -91,8 +91,17 @@ export default function LoginScreen({ navigation }) {
               <Text style={styles.recoverPasswordText}>Recuperar Contraseña</Text>
             </TouchableOpacity>
 
+            
+            <View style={styles.registerContainer}>
+                <Text style={styles.registerText}>¿No tienes cuenta? </Text>
+                <TouchableOpacity onPress={() => navigation.navigate('Register')}>
+                    <Text style={styles.registerLink}>Regístrate</Text>
+                </TouchableOpacity>
+            </View>
+
           </View>
         </ScrollView>
+      
     </SafeAreaView>
   );
 }
@@ -195,10 +204,26 @@ const styles = StyleSheet.create({
   },
   recoverPasswordButton: {
     alignItems: 'center',
+    marginBottom: 20, 
   },
   recoverPasswordText: {
     color: COLORS.primaryText,
     fontSize: 14,
     fontWeight: '600',
   },
+  registerContainer: {
+      flexDirection: 'row',
+      justifyContent: 'center',
+      marginTop: 10,
+  },
+  registerText: {
+      color: COLORS.primaryText,
+      fontSize: 14,
+  },
+  registerLink: {
+      color: COLORS.primaryText,
+      fontSize: 14,
+      fontWeight: 'bold',
+      textDecorationLine: 'underline',
+  }
 });

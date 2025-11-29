@@ -11,7 +11,8 @@ import {
   Image, 
 } from 'react-native';
 
-export default function App() {
+
+export default function RegisterScreen({ navigation }) {
   const [usuario, setUsuario] = useState('');
   const [correo, setCorreo] = useState('');
   const [contrasena, setContrasena] = useState('');
@@ -49,8 +50,11 @@ export default function App() {
       return;
     } 
     
-    alert('Éxito: ¡Cuenta creada exitosamente!');
+    
     console.log('Registro simulado OK:', { usuarioLimpio, correoLimpio, contrasenaLimpia });
+    
+    
+    navigation.replace('Graph'); 
   };
 
   return (
@@ -61,8 +65,6 @@ export default function App() {
           contentContainerStyle={styles.scrollContainer}
           keyboardShouldPersistTaps="always" 
         >
-          
-         
           <View style={styles.logoContainer}>
             <Image
               source={require('../assets/logo.png')} 
@@ -85,7 +87,7 @@ export default function App() {
               autoCapitalize="none"
             />
 
-            <Text style={styles.label}>Correo Electronico</Text>
+            <Text style={styles.label}>Correo Electrónico</Text>
             <TextInput
               style={styles.input}
               placeholder="Correo Electrónico"
@@ -117,8 +119,12 @@ export default function App() {
               <Text style={styles.primaryButtonText}>Crear Cuenta</Text>
             </TouchableOpacity>
             
-            <TouchableOpacity style={styles.secondaryButton}>
-              <Text style={styles.secondaryButtonText}>Iniciar sesión</Text>
+            
+            <TouchableOpacity 
+                style={styles.secondaryButton}
+                onPress={() => navigation.navigate('Login')}
+            >
+              <Text style={styles.secondaryButtonText}>¿Ya tienes cuenta? Iniciar sesión</Text>
             </TouchableOpacity>
           </View>
         </ScrollView>
@@ -230,6 +236,7 @@ const styles = StyleSheet.create({
   },
   secondaryButton: {
     alignItems: 'center',
+    padding: 10,
   },
   secondaryButtonText: {
     color: COLORS.primaryText,
