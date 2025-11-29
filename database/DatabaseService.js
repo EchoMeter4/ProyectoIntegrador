@@ -13,11 +13,13 @@ class DatabaseService {
     async createTables() {
         await this.db.runAsync(`PRAGMA foreign_keys = ON`);
 
+        // await this.db.runAsync(`DROP TABLE usuarios`);
+
         await this.db.runAsync(
             `CREATE TABLE IF NOT EXISTS usuarios (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
-            alias VARCHAR(50)  NOT NULL,
-            correo  VARCHAR(100) NOT NULL,
+            alias VARCHAR(50)  NOT NULL UNIQUE,
+            correo  VARCHAR(100) NOT NULL UNIQUE,
             password VARCHAR(255) NOT NULL
         )`);
 

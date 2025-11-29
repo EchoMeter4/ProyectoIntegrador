@@ -57,7 +57,7 @@ class UsuariosController extends BaseController {
             }
 
             fresh.authenticate(usuario.password);
-            return usuario;
+            return fresh;
         } catch (error) {
             console.error(`Error al autenticar: ${error}`)
             throw error;

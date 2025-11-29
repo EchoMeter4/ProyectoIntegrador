@@ -9,13 +9,19 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import {useNavigation} from "@react-navigation/native";
+import {useAuth} from "../components/AuthContext";
 
 export default function ProfileScreen() {
   const navigation = useNavigation();
+  const {logout, user} = useAuth();
 
   const handlePress = (option) => {
     Alert.alert('Opción seleccionada', `Has presionado: ${option}`);
   };
+
+  function handleLogout() {
+    logout()
+  }
 
   return (
     <View style={styles.container}>
@@ -30,8 +36,8 @@ export default function ProfileScreen() {
         <View style={styles.avatar}>
           <Ionicons name="person" size={60} color="#2B7A78" />
         </View>
-        <Text style={styles.userName}>Nombre de Usuario</Text>
-        <Text style={styles.userEmail}>usuario@ahorra.app</Text>
+        <Text style={styles.userName}> {user.alias} </Text>
+        <Text style={styles.userEmail}>{user.correo}</Text>
       </View>
 
       <View style={styles.section}>
@@ -57,7 +63,7 @@ export default function ProfileScreen() {
         </TouchableOpacity>
       </View>
 
-      <TouchableOpacity style={styles.logoutButton} onPress={() => handlePress('Cerrar Sesión')}>
+      <TouchableOpacity style={styles.logoutButton} onPress={() => handleLogout()}>
         <Text style={styles.logoutText}>Cerrar Sesión</Text>
       </TouchableOpacity>
     </View>
