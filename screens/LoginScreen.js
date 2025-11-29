@@ -43,7 +43,6 @@ export default function LoginScreen({ navigation }) {
 
       try {
         await login(usuario);
-        navigation.replace('Graph');
       } catch (error) {
         Alert.alert('Credenciales Incorrectas', error.message);
       }
