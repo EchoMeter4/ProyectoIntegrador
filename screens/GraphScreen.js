@@ -1,10 +1,10 @@
 import React, {useState} from "react";
-import {Image, ScrollView, StyleSheet, Text, View,} from "react-native";
-import Navbar from "../components/Navbar.js";
-import CrudModal from "./CrudModal.js";
+import {Image, ScrollView, StyleSheet, Text, View} from "react-native";
 import AppHeader from "../components/AppHeader";
+import Navbar from '../components/Navbar'
+import CrudModal from "./CrudModal";
 
-export default function graphScreen() {
+export default function GraphScreen() {
     const [showModal, setShowModal] = useState(false);
     const toggleModal = () => setShowModal(!showModal);
 
@@ -107,7 +107,8 @@ const styles = StyleSheet.create({
         backgroundColor: BG
     },
     scrollArea: {
-        paddingBottom: 80
+        paddingBottom: 80,
+        // backgroundColor: '#338b84'
     },
     cardSection: {
         marginTop: -30,

@@ -1,9 +1,10 @@
-import {StyleSheet} from 'react-native';
-import MenuScreen from "./screens/MenuScreen";
+import {AuthProvider} from "./components/AuthContext";
+import NavigationScreen from "./screens/NavigationScreen";
 
 export default function App() {
     return (
-        <MenuScreen/>
+        <AuthProvider >
+            <NavigationScreen/>
+        </AuthProvider>
     )
 }
-

@@ -1,8 +1,17 @@
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Alert } from 'react-native';
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  Alert,
+  Pressable
+} from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import {useNavigation} from "@react-navigation/native";
 
 export default function ProfileScreen() {
+  const navigation = useNavigation();
 
   const handlePress = (option) => {
     Alert.alert('Opción seleccionada', `Has presionado: ${option}`);
@@ -11,7 +20,12 @@ export default function ProfileScreen() {
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <Ionicons name="arrow-back" size={24} color="white" style={styles.backIcon} />
+        <TouchableOpacity
+            onPress={() => navigation.goBack()}
+            style={styles.backIcon}
+        >
+          <Ionicons name="arrow-back" size={24} color="white"/>
+        </TouchableOpacity>
         <Text style={styles.headerTitle}>Ajustes</Text>
         <View style={styles.avatar}>
           <Ionicons name="person" size={60} color="#2B7A78" />
@@ -66,7 +80,7 @@ const styles = StyleSheet.create({
   },
   backIcon: {
     position: 'absolute',
-    top: 50,
+    top: 60,
     left: 20,
   },
   headerTitle: {
