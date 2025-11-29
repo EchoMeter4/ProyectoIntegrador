@@ -12,7 +12,7 @@ import {
 } from 'react-native';
 
 
-export default function RecoverPasswordScreen() {
+export default function RecoverPasswordScreen({ navigation }) {
   const [correo, setCorreo] = useState('');
 
   const handleRecuperar = () => {
@@ -33,6 +33,8 @@ export default function RecoverPasswordScreen() {
     
     alert('Éxito: Se ha enviado un correo de recuperación a ' + correoLimpio);
     console.log('Recuperación simulada OK:', { correoLimpio });
+    
+    
   };
 
   return (
@@ -44,7 +46,6 @@ export default function RecoverPasswordScreen() {
           keyboardShouldPersistTaps="always" 
         >
           
-         
           <View style={styles.logoContainer}>
             <Image
               source={require('../assets/logo.png')} 
@@ -72,9 +73,14 @@ export default function RecoverPasswordScreen() {
               <Text style={styles.primaryButtonText}>Enviar Correo</Text>
             </TouchableOpacity>
             
-            <TouchableOpacity style={styles.secondaryButton}>
+            
+            <TouchableOpacity 
+                style={styles.secondaryButton}
+                onPress={() => navigation.navigate('Login')}
+            >
               <Text style={styles.secondaryButtonText}>Volver a Iniciar sesión</Text>
             </TouchableOpacity>
+
           </View>
         </ScrollView>
       
@@ -165,6 +171,7 @@ const styles = StyleSheet.create({
   },
   secondaryButton: {
     alignItems: 'center',
+    padding: 10, 
   },
   secondaryButtonText: {
     color: COLORS.primaryText,

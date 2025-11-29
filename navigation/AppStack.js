@@ -1,13 +1,14 @@
 import React, {useState} from "react";
-import {NavigationContainer} from "@react-navigation/native";
-import RegisterScreen from "../screens/RegisterScreen";
-import LoginScreen from "../screens/LoginScreen";
+import {createNativeStackNavigator} from "@react-navigation/native-stack";
+
+
 import GraphScreen from "../screens/GraphScreen";
 import ListScreen from "../screens/TransactionScreen";
 import ProfileScreen from "../screens/ProfileScreen";
+
+
 import Navbar from "../components/Navbar";
 import CrudModal from "../screens/CrudModal";
-import {createNativeStackNavigator} from "@react-navigation/native-stack";
 
 const MainStack = createNativeStackNavigator();
 
@@ -36,16 +37,14 @@ export default function AppStack({currentRoute}) {
                 <MainStack.Screen
                     name="Profile"
                     component={ProfileScreen}
+                    
+                    options={{animation: 'none'}} 
                 />
             </MainStack.Navigator>
 
-
-            {!['Profile'].includes(currentRoute) && (
-                <>
-                    <Navbar toggleModal={toggleModal}/>
-                    <CrudModal visible={showModal} setVisible={setShowModal}/>
-                </>
-            )}
+            
+            <Navbar toggleModal={toggleModal}/>
+            <CrudModal visible={showModal} setVisible={setShowModal}/>
         </>
     )
 }

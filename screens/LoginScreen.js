@@ -8,16 +8,17 @@ import {
   ScrollView,
   SafeAreaView,
   StatusBar,
-  Image, Alert,
+  Image, 
+  Alert,
 } from 'react-native';
 import {useAuth} from "../components/AuthContext";
 import Usuario from "../models/Usuario";
 import {isValidEmail} from "../utils/utils";
 
-
 export default function LoginScreen({ navigation }) {
   const [campoUsuario, setcampoUsuario] = useState('');
   const [contrasena, setContrasena] = useState('');
+  
   const {login} = useAuth();
 
   const handleLogin = async () => {
@@ -42,7 +43,11 @@ export default function LoginScreen({ navigation }) {
       }
 
       try {
+        
         await login(usuario);
+        
+        
+        
       } catch (error) {
         Alert.alert('Credenciales Incorrectas', error.message);
       }
@@ -57,9 +62,7 @@ export default function LoginScreen({ navigation }) {
           contentContainerStyle={styles.scrollContainer}
           keyboardShouldPersistTaps="always"
         >
-
           <View style={styles.logoContainer}>
-
             <Image
               source={require('../assets/logo.png')}
               style={styles.logoImage}
@@ -69,8 +72,8 @@ export default function LoginScreen({ navigation }) {
 
           <View style={styles.card}>
             <Text style={styles.title}>Inicio de Sesión</Text>
+            
             <Text style={styles.label}>Usuario o Correo</Text>
-
             <TextInput
               style={styles.input}
               placeholder="Usuario"
@@ -79,8 +82,8 @@ export default function LoginScreen({ navigation }) {
               onChangeText={setcampoUsuario}
               autoCapitalize="none"
             />
-            <Text style={styles.label}>Contraseña</Text>
 
+            <Text style={styles.label}>Contraseña</Text>
             <View style={styles.passwordContainer}>
               <TextInput
                 style={styles.passwordInput}
@@ -90,7 +93,6 @@ export default function LoginScreen({ navigation }) {
                 onChangeText={setContrasena}
                 secureTextEntry={true}
               />
-
               <Image
                 source={require('../assets/ojo.png')}
                 style={styles.eyeIconImage}
@@ -104,22 +106,25 @@ export default function LoginScreen({ navigation }) {
               <Text style={styles.loginButtonText}>Iniciar Sesión</Text>
             </TouchableOpacity>
 
-            <TouchableOpacity style={styles.recoverPasswordButton}>
+            <TouchableOpacity 
+                style={styles.recoverPasswordButton}
+                onPress={() => navigation.navigate('Recovery')}
+            >
               <Text style={styles.recoverPasswordText}>Recuperar Contraseña</Text>
             </TouchableOpacity>
+            
             <TouchableOpacity
                 style={styles.recoverPasswordButton}
                 onPress={() => navigation.navigate('Register')}
             >
               <Text style={styles.recoverPasswordText}>Registrarse</Text>
             </TouchableOpacity>
+
           </View>
         </ScrollView>
-
     </SafeAreaView>
   );
 }
-
 
 const COLORS = {
   backgroundMain: '#3B8A84',
@@ -130,7 +135,6 @@ const COLORS = {
 };
 
 const styles = StyleSheet.create({
-  // ... el resto de tus estilos ...
   safeArea: {
     flex: 1,
     backgroundColor: COLORS.backgroundMain,
@@ -220,6 +224,7 @@ const styles = StyleSheet.create({
   },
   recoverPasswordButton: {
     alignItems: 'center',
+    marginTop: 15,
   },
   recoverPasswordText: {
     color: COLORS.primaryText,
