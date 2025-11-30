@@ -1,4 +1,4 @@
-import React, {useState, useEffect, useRef} from "react"; 
+import React, {useState, useEffect} from "react"; 
 import {
     Alert,
     ScrollView,
@@ -15,6 +15,9 @@ import AppHeader from "../components/AppHeader";
 import { usePreferences } from "../components/PreferencesContext";
 import { useTransactions } from "../components/TransactionsContext"; 
 
+
+
+
 export default function PantallaTransacciones() {
     const [mostrarModal, setMostrarModal] = useState(false);
     const [tipoSeleccionado, setTipoSeleccionado] = useState(null);
@@ -23,27 +26,31 @@ export default function PantallaTransacciones() {
 
     const { presupuesto } = usePreferences();
     
+    
     const { 
         transacciones, 
         eliminarTransaccion, 
         activeFilter, 
-        setActiveFilter 
+        setActiveFilter,
+        
     } = useTransactions(); 
 
     
+    
+    
+    
     const parsearMonto = (str) => {
         if (!str) return 0;
+        
         return parseFloat(str.toString().replace('$', '').replace(/,/g, ''));
     };
 
     const totalGastos = transacciones
-        
         .filter(t => t.tipo === 'gasto')
         .reduce((acc, item) => acc + parsearMonto(item.monto), 0);
 
     const limitePresupuesto = parseFloat(presupuesto);
 
-    
     const estaExcedido = transacciones.length > 0 && limitePresupuesto > 0 && totalGastos > limitePresupuesto;
 
     
@@ -100,11 +107,16 @@ export default function PantallaTransacciones() {
     return (
         <View style={styles.pagina}>
             <ScrollView contentContainerStyle={styles.areaScroll} showsVerticalScrollIndicator={false}>
+                
+                
+                
+                
                 <AppHeader/>
 
                 <View style={styles.tarjetaLista}>
                     <View style={styles.encabezadoLista}>
                         <View style={styles.filtrosFila}>
+                            
                             <TouchableOpacity style={styles.botonDropdown}>
                                 <Text style={styles.textoDropdown}>Categorías ▼</Text>
                             </TouchableOpacity>
@@ -141,8 +153,8 @@ export default function PantallaTransacciones() {
                             <Feather name="list" size={40} color="#ccc" />
                             <Text style={{color: '#888', marginTop: 10}}>
                                 {activeFilter === 'all' 
-                                    ? 'No hay movimientos aún.' 
-                                    : `No hay ${activeFilter}s en la lista.`}
+                                    ? 'No hay movimientos aún en este mes.' 
+                                    : `No hay ${activeFilter}s en la lista para este mes.`}
                             </Text>
                             <Text style={{color: '#aaa', fontSize: 12}}>Usa el botón + para agregar uno.</Text>
                         </View>
@@ -160,7 +172,8 @@ export default function PantallaTransacciones() {
                                         </Text>
                                     ) : null}
 
-                                    <Text style={styles.fechaTransaccion}>{item.fecha}</Text>
+                                    
+                                    <Text style={styles.fechaTransaccion}>{item.fecha}</Text> 
                                 </View>
 
                                 <View style={styles.derecha}>
@@ -210,7 +223,9 @@ const VERDE = "#0F6D66";
 const FONDO = "#D2EFEC";
 const BORDE = "#E6ECEC";
 
+
 const styles = StyleSheet.create({
+    
     pagina: {
         flex: 1,
         backgroundColor: FONDO,
@@ -220,7 +235,7 @@ const styles = StyleSheet.create({
     },
     tarjetaLista: {
         backgroundColor: "#fff",
-        marginTop: -15,
+        marginTop: 0, 
         marginHorizontal: 16,
         borderRadius: 16,
         paddingVertical: 14,

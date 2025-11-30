@@ -10,28 +10,54 @@ export function TransactionsProvider({ children }) {
   const [activeFilter, setActiveFilter] = useState('all'); 
 
   
+  const initialMonthYear = new Date().toISOString().substring(0, 7); 
+  const [filterMonthYear, setFilterMonthYear] = useState(initialMonthYear);
+
+
+  
   useEffect(() => {
     const init = async () => {
       try {
-        
         if (!DatabaseService.getDB()) {
             await DatabaseService.initialize();
         }
-        await recargarTransacciones();
+        
+        await recargarTransacciones(activeFilter, filterMonthYear);
       } catch (error) {
         console.error("Error al cargar transacciones:", error);
       }
     };
     init();
-  }, []);
+    
+  }, [activeFilter, filterMonthYear]); 
 
   
-  const recargarTransacciones = async () => {
+ 
+  const recargarTransacciones = async (tipo, mesAnio) => {
     try {
       const db = DatabaseService.getDB();
       if (!db) return;
       
-      const result = await db.getAllAsync('SELECT * FROM transacciones ORDER BY id DESC');
+      let sql = 'SELECT * FROM transacciones WHERE 1=1'; 
+      let params = [];
+        
+      
+      if (mesAnio) {
+          
+          sql += ' AND fecha LIKE ?';
+          params.push(`${mesAnio}%`); 
+      }
+      
+      
+      if (tipo && tipo !== 'all') {
+          sql += ' AND tipo = ?';
+          params.push(tipo);
+      }
+      
+      sql += ' ORDER BY id DESC';
+        
+      
+      const result = await db.getAllAsync(sql, params);
       setTransacciones(result);
     } catch (error) {
       console.error("Error leyendo datos:", error);
@@ -39,15 +65,8 @@ export function TransactionsProvider({ children }) {
   };
 
   
-  const filteredTransactions = useMemo(() => {
-    if (activeFilter === 'all') {
-      return transacciones;
-    }
-    
-    return transacciones.filter(tx => tx.tipo === activeFilter);
-  }, [transacciones, activeFilter]);
   
-  
+
   const agregarTransaccion = async (tx) => {
     const db = DatabaseService.getDB();
     if (!db) throw new Error("Base de datos no lista");
@@ -63,7 +82,8 @@ export function TransactionsProvider({ children }) {
           tx.tipo
         ]
       );
-      await recargarTransacciones(); 
+      
+      await recargarTransacciones(activeFilter, filterMonthYear); 
     } catch (error) {
       console.error("Error al agregar:", error);
       throw error; 
@@ -77,7 +97,8 @@ export function TransactionsProvider({ children }) {
 
     try {
       await db.runAsync('DELETE FROM transacciones WHERE id = ?', [id]);
-      await recargarTransacciones();
+      
+      await recargarTransacciones(activeFilter, filterMonthYear);
     } catch (error) {
       console.error("Error al eliminar:", error);
     }
@@ -100,21 +121,28 @@ export function TransactionsProvider({ children }) {
           id
         ]
       );
-      await recargarTransacciones();
+      
+      await recargarTransacciones(activeFilter, filterMonthYear);
     } catch (error) {
       console.error("Error al editar:", error);
       throw error;
     }
   };
 
+  
+
   return (
     <TransactionsContext.Provider value={{ 
       
-      transacciones: filteredTransactions, 
+      transacciones, 
       
       
       activeFilter,
       setActiveFilter,
+      
+     
+      filterMonthYear,
+      setFilterMonthYear,
       
       agregarTransaccion, 
       eliminarTransaccion, 
