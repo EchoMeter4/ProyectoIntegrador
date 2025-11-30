@@ -1,10 +1,13 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useMemo } from 'react';
 import DatabaseService from '../database/DatabaseService';
 
 const TransactionsContext = createContext();
 
 export function TransactionsProvider({ children }) {
   const [transacciones, setTransacciones] = useState([]);
+  
+  
+  const [activeFilter, setActiveFilter] = useState('all'); 
 
   
   useEffect(() => {
@@ -35,6 +38,15 @@ export function TransactionsProvider({ children }) {
     }
   };
 
+  
+  const filteredTransactions = useMemo(() => {
+    if (activeFilter === 'all') {
+      return transacciones;
+    }
+    
+    return transacciones.filter(tx => tx.tipo === activeFilter);
+  }, [transacciones, activeFilter]);
+  
   
   const agregarTransaccion = async (tx) => {
     const db = DatabaseService.getDB();
@@ -71,7 +83,7 @@ export function TransactionsProvider({ children }) {
     }
   };
 
-  // EDITAR: Corregido el paso de parámetros con [ ]
+  
   const editarTransaccion = async (id, tx) => {
     const db = DatabaseService.getDB();
     if (!db) return;
@@ -97,7 +109,13 @@ export function TransactionsProvider({ children }) {
 
   return (
     <TransactionsContext.Provider value={{ 
-      transacciones, 
+      
+      transacciones: filteredTransactions, 
+      
+      
+      activeFilter,
+      setActiveFilter,
+      
       agregarTransaccion, 
       eliminarTransaccion, 
       editarTransaccion 

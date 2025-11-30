@@ -4,7 +4,7 @@ import {
     ScrollView,
     StyleSheet,
     Text,
-    TouchableOpacity,
+    TouchableOpacity, 
     View
 } from "react-native";
 import {Feather} from "@expo/vector-icons";
@@ -22,7 +22,13 @@ export default function PantallaTransacciones() {
     const [transaccionAEditar, setTransaccionAEditar] = useState(null); 
 
     const { presupuesto } = usePreferences();
-    const { transacciones, eliminarTransaccion } = useTransactions(); 
+    
+    const { 
+        transacciones, 
+        eliminarTransaccion, 
+        activeFilter, 
+        setActiveFilter 
+    } = useTransactions(); 
 
     
     const parsearMonto = (str) => {
@@ -31,6 +37,7 @@ export default function PantallaTransacciones() {
     };
 
     const totalGastos = transacciones
+        
         .filter(t => t.tipo === 'gasto')
         .reduce((acc, item) => acc + parsearMonto(item.monto), 0);
 
@@ -83,6 +90,13 @@ export default function PantallaTransacciones() {
     const etiquetaTipo = (t) =>
         t === "ingreso" ? "· Ingreso" : t === "gasto" ? "· Gasto" : "· Presupuesto";
 
+    const tipos = [
+        { label: "Gasto", value: "gasto" },
+        { label: "Ingreso", value: "ingreso" },
+        { label: "Presupuesto", value: "presupuesto" },
+        { label: "Todo", value: "all" }, 
+    ];
+
     return (
         <View style={styles.pagina}>
             <ScrollView contentContainerStyle={styles.areaScroll} showsVerticalScrollIndicator={false}>
@@ -96,23 +110,40 @@ export default function PantallaTransacciones() {
                             </TouchableOpacity>
                         </View>
 
+                        
                         <View style={styles.tiposSeleccionados}>
-                            <View style={[styles.pildoraTipo, styles.pildoraActiva]}>
-                                <Text style={styles.textoPildoraActiva}>Gasto</Text>
-                            </View>
-                            <View style={[styles.pildoraTipo, styles.pildoraActiva]}>
-                                <Text style={styles.textoPildoraActiva}>Ingreso</Text>
-                            </View>
-                            <View style={[styles.pildoraTipo, styles.pildoraActiva]}>
-                                <Text style={styles.textoPildoraActiva}>Presupuesto</Text>
-                            </View>
+                            {tipos.map((t) => (
+                                <TouchableOpacity 
+                                    key={t.value}
+                                    style={[
+                                        styles.pildoraTipo, 
+                                        activeFilter === t.value && styles.pildoraActiva
+                                    ]}
+                                    onPress={() => setActiveFilter(t.value)} 
+                                >
+                                    <Text 
+                                        style={[
+                                            styles.textoPildora, 
+                                            activeFilter === t.value && styles.textoPildoraActiva
+                                        ]}
+                                    >
+                                        {t.label}
+                                    </Text>
+                                </TouchableOpacity>
+                            ))}
                         </View>
+                        
                     </View>
 
+                    
                     {transacciones.length === 0 ? (
                         <View style={{padding: 40, alignItems: 'center'}}>
                             <Feather name="list" size={40} color="#ccc" />
-                            <Text style={{color: '#888', marginTop: 10}}>No hay movimientos aún.</Text>
+                            <Text style={{color: '#888', marginTop: 10}}>
+                                {activeFilter === 'all' 
+                                    ? 'No hay movimientos aún.' 
+                                    : `No hay ${activeFilter}s en la lista.`}
+                            </Text>
                             <Text style={{color: '#aaa', fontSize: 12}}>Usa el botón + para agregar uno.</Text>
                         </View>
                     ) : (
@@ -232,6 +263,7 @@ const styles = StyleSheet.create({
         justifyContent: "space-between",
         marginTop: 10,
     },
+    
     pildoraTipo: {
         flex: 1,
         alignItems: "center",
@@ -250,6 +282,10 @@ const styles = StyleSheet.create({
         shadowRadius: 6,
         shadowOffset: { width: 0, height: 2 },
         elevation: 2,
+    },
+    textoPildora: { 
+        color: '#6B8B8B', 
+        fontWeight: '600' 
     },
     textoPildoraActiva: {
         color: VERDE,
