@@ -28,11 +28,11 @@ export function TransactionsProvider({ children }) {
       }
     };
     init();
-    
+   
   }, [activeFilter, filterMonthYear]); 
 
   
- 
+  
   const recargarTransacciones = async (tipo, mesAnio) => {
     try {
       const db = DatabaseService.getDB();
@@ -64,9 +64,25 @@ export function TransactionsProvider({ children }) {
     }
   };
 
-  
-  
 
+  
+  const getAllTransactionsForCharts = async () => {
+      const db = DatabaseService.getDB();
+      if (!db) return [];
+
+      try {
+          
+          let sql = 'SELECT * FROM transacciones ORDER BY fecha ASC'; 
+          
+          const result = await db.getAllAsync(sql, []);
+          return result;
+      } catch (error) {
+          console.error("Error obteniendo data para gráficos:", error);
+          return [];
+      }
+  };
+  
+  
   const agregarTransaccion = async (tx) => {
     const db = DatabaseService.getDB();
     if (!db) throw new Error("Base de datos no lista");
@@ -91,6 +107,7 @@ export function TransactionsProvider({ children }) {
   };
 
   
+  
   const eliminarTransaccion = async (id) => {
     const db = DatabaseService.getDB();
     if (!db) return;
@@ -104,6 +121,7 @@ export function TransactionsProvider({ children }) {
     }
   };
 
+  
   
   const editarTransaccion = async (id, tx) => {
     const db = DatabaseService.getDB();
@@ -129,20 +147,21 @@ export function TransactionsProvider({ children }) {
     }
   };
 
-  
 
   return (
     <TransactionsContext.Provider value={{ 
-      
       transacciones, 
       
       
-      activeFilter,
-      setActiveFilter,
+      activeFilter, 
+      setActiveFilter, 
+
       
-     
-      filterMonthYear,
+      filterMonthYear, 
       setFilterMonthYear,
+      
+      
+      getAllTransactionsForCharts,
       
       agregarTransaccion, 
       eliminarTransaccion, 
