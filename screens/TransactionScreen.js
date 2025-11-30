@@ -1,4 +1,4 @@
-import React, {useState, useEffect} from "react"; 
+import React, {useState, useEffect, useRef} from "react"; 
 import {
     Alert,
     ScrollView,
@@ -12,7 +12,6 @@ import Navbar from "../components/Navbar";
 import CrudModal from "./CrudModal";
 import AppHeader from "../components/AppHeader";
 
-
 import { usePreferences } from "../components/PreferencesContext";
 import { useTransactions } from "../components/TransactionsContext"; 
 
@@ -23,10 +22,35 @@ export default function PantallaTransacciones() {
     const [transaccionAEditar, setTransaccionAEditar] = useState(null); 
 
     const { presupuesto } = usePreferences();
-    
-    
     const { transacciones, eliminarTransaccion } = useTransactions(); 
 
+    
+    const parsearMonto = (str) => {
+        if (!str) return 0;
+        return parseFloat(str.toString().replace('$', '').replace(/,/g, ''));
+    };
+
+    const totalGastos = transacciones
+        .filter(t => t.tipo === 'gasto')
+        .reduce((acc, item) => acc + parsearMonto(item.monto), 0);
+
+    const limitePresupuesto = parseFloat(presupuesto);
+
+    
+    const estaExcedido = transacciones.length > 0 && limitePresupuesto > 0 && totalGastos > limitePresupuesto;
+
+    
+    useEffect(() => {
+        if (estaExcedido) {
+            Alert.alert(
+                "⚠️ ¡Cuidado!",
+                `Has superado tu presupuesto. Gastado: $${totalGastos.toFixed(2)} / Límite: $${limitePresupuesto.toFixed(2)}`
+            );
+        }
+        
+    }, [estaExcedido]); 
+
+    
     function alternarModal() {
         setTipoSeleccionado(undefined);
         setTransaccionAEditar(null);
@@ -34,31 +58,6 @@ export default function PantallaTransacciones() {
         setMostrarModal(!mostrarModal);
     }
 
-    
-    useEffect(() => {
-        
-        const parsearMonto = (str) => {
-            if (!str) return 0;
-            return parseFloat(str.toString().replace('$', '').replace(/,/g, ''));
-        };
-
-        
-        const totalGastos = transacciones
-            .filter(t => t.tipo === 'gasto')
-            .reduce((acc, item) => acc + parsearMonto(item.monto), 0);
-
-        const limitePresupuesto = parseFloat(presupuesto);
-
-        
-        if (limitePresupuesto > 0 && totalGastos > limitePresupuesto) {
-            Alert.alert(
-                "⚠️ ¡Cuidado!",
-                `Has gastado $${totalGastos.toFixed(2)} y tu presupuesto es de $${limitePresupuesto.toFixed(2)}.`
-            );
-        }
-    }, [transacciones, presupuesto]);
-
-    
     const confirmarEliminar = (id) => {
         Alert.alert(
             "Eliminar",
@@ -74,7 +73,6 @@ export default function PantallaTransacciones() {
         );
     };
 
-    
     const editar = (item) => {
         setTransaccionAEditar(item); 
         setTipoSeleccionado(item.tipo);
@@ -111,7 +109,6 @@ export default function PantallaTransacciones() {
                         </View>
                     </View>
 
-                    
                     {transacciones.length === 0 ? (
                         <View style={{padding: 40, alignItems: 'center'}}>
                             <Feather name="list" size={40} color="#ccc" />
@@ -125,7 +122,6 @@ export default function PantallaTransacciones() {
                                     <Text style={styles.tituloTransaccion}>
                                         {item.categoria} {etiquetaTipo(item.tipo)}
                                     </Text>
-                                    
                                     
                                     {item.descripcion ? (
                                         <Text style={styles.descTransaccion} numberOfLines={1}>
