@@ -38,13 +38,15 @@ export function AuthProvider({children}) {
         console.log(`Solicitud de recuperación para: ${email}`);
         
         
-
         return true; 
     }
+    
+    
+    const userId = user ? user.id : null;
 
     return (
         
-        <AuthContext.Provider value={{user, login, logout, recuperarPassword}}>
+        <AuthContext.Provider value={{user, login, logout, recuperarPassword, userId}}>
             {children}
         </AuthContext.Provider>
     )

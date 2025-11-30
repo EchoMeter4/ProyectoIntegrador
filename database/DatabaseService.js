@@ -37,11 +37,13 @@ class DatabaseService {
             await this.db.runAsync(`
                 CREATE TABLE IF NOT EXISTS transacciones (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    id_usuario INTEGER NOT NULL,  
                     monto TEXT NOT NULL,
                     categoria TEXT NOT NULL,
                     descripcion TEXT,
                     fecha TEXT,
-                    tipo TEXT
+                    tipo TEXT,
+                    FOREIGN KEY (id_usuario) REFERENCES usuarios(id)  
                 );
             `);
 
