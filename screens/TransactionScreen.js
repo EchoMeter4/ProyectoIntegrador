@@ -1,4 +1,4 @@
-import React, {useState} from "react";
+import React, {useState, useEffect} from "react"; 
 import {
     Alert,
     ScrollView,
@@ -12,32 +12,72 @@ import Navbar from "../components/Navbar";
 import CrudModal from "./CrudModal";
 import AppHeader from "../components/AppHeader";
 
+
+import { usePreferences } from "../components/PreferencesContext";
+import { useTransactions } from "../components/TransactionsContext"; 
+
 export default function PantallaTransacciones() {
     const [mostrarModal, setMostrarModal] = useState(false);
     const [tipoSeleccionado, setTipoSeleccionado] = useState(null);
     const [operacion, setOperacion] = useState("editar");
+    const [transaccionAEditar, setTransaccionAEditar] = useState(null); 
+
+    const { presupuesto } = usePreferences();
+    
+    
+    const { transacciones, eliminarTransaccion } = useTransactions(); 
 
     function alternarModal() {
         setTipoSeleccionado(undefined);
+        setTransaccionAEditar(null);
         setOperacion("crear");
         setMostrarModal(!mostrarModal);
     }
 
-    const transacciones = [
-        { tipo: "ingreso",  categoria: "Salario",    fecha: "02 de noviembre", monto: "$9,100.00" },
-        { tipo: "gasto",    categoria: "Escuela",    fecha: "05 de noviembre", monto: "$91.00" },
-        { tipo: "ingreso",  categoria: "Otros",      fecha: "10 de noviembre", monto: "$500.00" },
-        { tipo: "gasto",    categoria: "Renta",      fecha: "15 de noviembre", monto: "$4,500.00" },
-        { tipo: "presupuesto", categoria: "Comida",      fecha: "01 de noviembre", monto: "$3,000.00" },
-        { tipo: "presupuesto", categoria: "Transporte",  fecha: "01 de noviembre", monto: "$1,000.00" },
-        { tipo: "presupuesto", categoria: "Escuela",     fecha: "01 de noviembre", monto: "$2,500.00" },
-        { tipo: "presupuesto", categoria: "Renta",       fecha: "01 de noviembre", monto: "$5,000.00" },
-    ];
+    
+    useEffect(() => {
+        
+        const parsearMonto = (str) => {
+            if (!str) return 0;
+            return parseFloat(str.toString().replace('$', '').replace(/,/g, ''));
+        };
 
-    const eliminar = () => Alert.alert("Eliminar", "Transacción eliminada (demo)");
+        
+        const totalGastos = transacciones
+            .filter(t => t.tipo === 'gasto')
+            .reduce((acc, item) => acc + parsearMonto(item.monto), 0);
 
-    const editar = (t) => {
-        setTipoSeleccionado(t.tipo);
+        const limitePresupuesto = parseFloat(presupuesto);
+
+        
+        if (limitePresupuesto > 0 && totalGastos > limitePresupuesto) {
+            Alert.alert(
+                "⚠️ ¡Cuidado!",
+                `Has gastado $${totalGastos.toFixed(2)} y tu presupuesto es de $${limitePresupuesto.toFixed(2)}.`
+            );
+        }
+    }, [transacciones, presupuesto]);
+
+    
+    const confirmarEliminar = (id) => {
+        Alert.alert(
+            "Eliminar",
+            "¿Borrar esta transacción?",
+            [
+                { text: "Cancelar", style: "cancel" },
+                { 
+                    text: "Eliminar", 
+                    style: "destructive", 
+                    onPress: () => eliminarTransaccion(id) 
+                }
+            ]
+        );
+    };
+
+    
+    const editar = (item) => {
+        setTransaccionAEditar(item); 
+        setTipoSeleccionado(item.tipo);
         setOperacion("editar");
         setMostrarModal(true);
     };
@@ -71,50 +111,69 @@ export default function PantallaTransacciones() {
                         </View>
                     </View>
 
-                    {transacciones.map((item, idx) => (
-                        <View key={idx} style={styles.fila}>
-                            <View>
-                                <Text style={styles.tituloTransaccion}>
-                                    {item.categoria} {etiquetaTipo(item.tipo)}
-                                </Text>
-                                <Text style={styles.fechaTransaccion}>{item.fecha}</Text>
-                            </View>
+                    
+                    {transacciones.length === 0 ? (
+                        <View style={{padding: 40, alignItems: 'center'}}>
+                            <Feather name="list" size={40} color="#ccc" />
+                            <Text style={{color: '#888', marginTop: 10}}>No hay movimientos aún.</Text>
+                            <Text style={{color: '#aaa', fontSize: 12}}>Usa el botón + para agregar uno.</Text>
+                        </View>
+                    ) : (
+                        transacciones.map((item, idx) => (
+                            <View key={item.id || idx} style={styles.fila}>
+                                <View style={{flex: 1}}>
+                                    <Text style={styles.tituloTransaccion}>
+                                        {item.categoria} {etiquetaTipo(item.tipo)}
+                                    </Text>
+                                    
+                                    
+                                    {item.descripcion ? (
+                                        <Text style={styles.descTransaccion} numberOfLines={1}>
+                                            {item.descripcion}
+                                        </Text>
+                                    ) : null}
 
-                            <View style={styles.derecha}>
-                                <Text
-                                    style={[
-                                        styles.montoTransaccion,
-                                        item.tipo === "ingreso"
-                                            ? styles.montoIngreso
-                                            : item.tipo === "gasto"
-                                                ? styles.montoGasto
-                                                : styles.montoPresupuesto
-                                    ]}
-                                >
-                                    {item.monto}
-                                </Text>
+                                    <Text style={styles.fechaTransaccion}>{item.fecha}</Text>
+                                </View>
 
-                                <View style={styles.iconos}>
-                                    <TouchableOpacity onPress={eliminar} style={styles.toqueIcono}>
-                                        <Feather name="trash-2" size={18} color="#0E7369" />
-                                    </TouchableOpacity>
+                                <View style={styles.derecha}>
+                                    <Text
+                                        style={[
+                                            styles.montoTransaccion,
+                                            item.tipo === "ingreso"
+                                                ? styles.montoIngreso
+                                                : item.tipo === "gasto"
+                                                    ? styles.montoGasto
+                                                    : styles.montoPresupuesto
+                                        ]}
+                                    >
+                                        {item.monto.toString().includes('$') ? item.monto : `$${item.monto}`}
+                                    </Text>
 
-                                    <TouchableOpacity onPress={() => editar(item)} style={styles.toqueIcono}>
-                                        <Feather name="edit-3" size={18} color="#0E7369" />
-                                    </TouchableOpacity>
+                                    <View style={styles.iconos}>
+                                        <TouchableOpacity onPress={() => confirmarEliminar(item.id)} style={styles.toqueIcono}>
+                                            <Feather name="trash-2" size={18} color="#0E7369" />
+                                        </TouchableOpacity>
+
+                                        <TouchableOpacity onPress={() => editar(item)} style={styles.toqueIcono}>
+                                            <Feather name="edit-3" size={18} color="#0E7369" />
+                                        </TouchableOpacity>
+                                    </View>
                                 </View>
                             </View>
-                        </View>
-                    ))}
+                        ))
+                    )}
                 </View>
             </ScrollView>
 
             <Navbar toggleModal={alternarModal}/>
+            
             <CrudModal
                 visible={mostrarModal}
                 setVisible={setMostrarModal}
                 operation={operacion}
                 type={tipoSeleccionado}
+                itemEditar={transaccionAEditar} 
             />
         </View>
     );
@@ -212,6 +271,12 @@ const styles = StyleSheet.create({
         color: VERDE,
         fontWeight: "700",
         fontSize: 15,
+    },
+    descTransaccion: { 
+        color: "#666",
+        fontSize: 12,
+        fontStyle: "italic",
+        marginBottom: 2
     },
     fechaTransaccion: {
         color: "#6B8B8B",

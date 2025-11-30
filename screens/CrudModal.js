@@ -1,324 +1,271 @@
-import React, {useEffect, useState} from "react";
+import React, { useState, useEffect } from 'react';
 import {
-    Alert, Modal, Pressable, ScrollView, StyleSheet,  Text, TextInput, TouchableOpacity, View,
-} from "react-native";
+  Modal,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+  ScrollView,
+  Alert,
+  Keyboard,
+  TouchableWithoutFeedback
+} from 'react-native';
 
-export default function CrudModal(
-    {visible, setVisible, operation = "crear", type = "gasto"},
-) {
-    const [entryType, setEntryType] = useState(type);
-    const [operationType, setOperationType] = useState(type);
+import { useTransactions } from '../components/TransactionsContext';
 
-    useEffect(() => {
-        setEntryType(type)
-        setOperationType(operation)
-    }, [type, operation]);
+export default function CrudModal({ visible, setVisible, operation, type, itemEditar }) {
+  
+  const [monto, setMonto] = useState('');
+  const [categoria, setCategoria] = useState('');
+  const [nota, setNota] = useState('');
+  const [tipoActual, setTipoActual] = useState('gasto'); 
 
-    const onSave = () => {
-        Alert.alert(`${entryType} guardado`);
+  const { agregarTransaccion, editarTransaccion } = useTransactions();
+
+  const categoriasEjemplo = {
+    gasto: ['Comida', 'Transporte', 'Renta', 'Escuela', 'Salud', 'Entretenimiento'],
+    ingreso: ['Salario', 'Ventas', 'Regalo', 'Inversión', 'Otros'],
+    presupuesto: ['Comida', 'Transporte', 'Renta', 'Ahorro']
+  };
+
+  useEffect(() => {
+    if (visible) {
+      // Solo intentamos pre-llenar si es editar Y si existe itemEditar
+      if (operation === 'editar' && itemEditar) {
+        setMonto(itemEditar.monto ? itemEditar.monto.toString().replace('$', '').replace(/,/g, '') : '');
+        setCategoria(itemEditar.categoria || '');
+        setNota(itemEditar.descripcion || '');
+        setTipoActual(itemEditar.tipo || 'gasto');
+      } else {
+        // Limpiar formulario para nuevo registro
+        setMonto('');
+        setCategoria('');
+        setNota('');
+        setTipoActual(type || 'gasto');
+      }
+    }
+  }, [visible, operation, itemEditar, type]);
+
+  const handleGuardar = async () => {
+    
+    if (!monto || !categoria) {
+      Alert.alert("Faltan datos", "Por favor ingresa un monto y selecciona una categoría.");
+      return;
+    }
+
+    const nuevaTransaccion = {
+      monto: monto,
+      categoria: categoria,
+      descripcion: nota,
+      fecha: new Date().toLocaleDateString('es-ES', { day: '2-digit', month: 'long' }),
+      tipo: tipoActual
     };
 
-    return (
-        <Modal animationType="slide" transparent visible={visible}>
-            <Pressable
-                onPress={() => setVisible(false)} style={styles.backdrop}
-            />
-            <View style={styles.modal}>
-                <View style={styles.tabs}>
-                    {
-                        entryType !== 'ingreso' && operationType !== 'crear' ? null :
-                            (
-                                <TouchableOpacity
-                                    onPress={() => setEntryType("ingreso")}
-                                    style={[styles.tabBtn, entryType === "ingreso" && styles.tabBtnActive]}
-                                >
-                                    <Text
-                                        style={[styles.tabText, entryType === "ingreso" && styles.tabTextActive]}
-                                    >
-                                        Ingreso
-                                    </Text>
-                                </TouchableOpacity>
-                            )
-                    }
-                    {
-                        entryType !== 'gasto' && operationType !== 'crear' ? null :
-                            (
-                                <TouchableOpacity
-                                    onPress={() => setEntryType("gasto")}
-                                    style={[styles.tabBtn, entryType === "gasto" && styles.tabBtnActive]}
-                                >
-                                    <Text
-                                        style={[styles.tabText, entryType === "gasto" && styles.tabTextActive]}
-                                    >
-                                        Gasto
-                                    </Text>
-                                </TouchableOpacity>
-                            )
-                    }
-                    {
-                        entryType !== 'presupuesto' && operationType !== 'crear' ? null :
-                            (
-                                <TouchableOpacity
-                                    onPress={() => setEntryType("presupuesto")}
-                                    style={[styles.tabBtn, entryType === "presupuesto" && styles.tabBtnActive]}
-                                >
-                                    <Text
-                                        style={[styles.tabText, entryType === "presupuesto" && styles.tabTextActive]}
-                                    >
-                                        Presupuesto
-                                    </Text>
-                                </TouchableOpacity>
-                            )
-                    }
-                </View>
+    try {
+      // --- CORRECCIÓN PRINCIPAL ---
+      // Si la operación es 'crear' O si por alguna razón itemEditar es null/undefined,
+      // lo tratamos como una inserción nueva para evitar el error "property id of undefined".
+      if (operation === 'crear' || !itemEditar) {
+        await agregarTransaccion(nuevaTransaccion);
+        Alert.alert("¡Éxito!", "Se agregó correctamente a tu lista.");
+      } else {
+        // Aquí ya estamos seguros de que itemEditar existe y tiene ID
+        await editarTransaccion(itemEditar.id, nuevaTransaccion);
+        Alert.alert("¡Éxito!", "Se actualizó correctamente.");
+      }
+      cerrarModal(); 
+    } catch (error) {
+      console.error("Error al guardar:", error);
+      // Mantenemos el error visible por si falla SQL, pero ya no debería fallar por lógica
+      Alert.alert("Error", error.message || "No se pudo guardar en la base de datos.");
+    }
+  };
 
-                <ScrollView contentContainerStyle={styles.body}>
-                    {entryType === "presupuesto" ? (
-                        <>
-                            <Text style={styles.sectionTitle}>Nombre</Text>
-                            <TextInput
-                                style={styles.textInput}
-                                placeholder="Ej. Comida"
-                                placeholderTextColor="#7A8F90"
-                            />
+  const cerrarModal = () => {
+    setVisible(false);
+    Keyboard.dismiss();
+  };
 
-                            <Text
-                                style={[styles.sectionTitle, {marginTop: 14}]}
-                            >Monto</Text>
-                            <TextInput
-                                style={styles.amountInput}
-                                placeholder="$0.00"
-                                placeholderTextColor="#7A8F90"
-                                keyboardType="numeric"
-                            />
-
-                            <Text
-                                style={[styles.sectionTitle, {marginTop: 16}]}
-                            >
-                                Seleccionar Ícono
-                            </Text>
-                            <View style={styles.chipsRow}>
-                                <TouchableOpacity
-                                    style={styles.chip}
-                                    onPress={() => Alert.alert("Ícono: Escuela")}
-                                >
-                                    <Text style={styles.chipEmoji}>🎓</Text>
-                                </TouchableOpacity>
-
-                                <TouchableOpacity
-                                    style={styles.chip}
-                                    onPress={() => Alert.alert("Ícono: Renta")}
-                                >
-                                    <Text style={styles.chipEmoji}>🏢</Text>
-                                </TouchableOpacity>
-
-                                <TouchableOpacity
-                                    style={styles.chip}
-                                    onPress={() => Alert.alert("Ícono: Comida")}
-                                >
-                                    <Text style={styles.chipEmoji}>🍔</Text>
-                                </TouchableOpacity>
-
-                                <TouchableOpacity
-                                    style={styles.chip}
-                                    onPress={() => Alert.alert("Ícono: Transporte")}
-                                >
-                                    <Text style={styles.chipEmoji}>🚌</Text>
-                                </TouchableOpacity>
-                            </View>
-                        </>
-                    ) : entryType === "ingreso" ? (
-                        <>
-                            <Text style={styles.sectionTitle}>Monto</Text>
-                            <TextInput
-                                style={styles.amountInput}
-                                placeholder="$0.00"
-                                placeholderTextColor="#7A8F90"
-                                keyboardType="numeric"
-                            />
-
-                            <Text
-                                style={[styles.sectionTitle, {marginTop: 16}]}
-                            >
-                                Seleccionar Categoría
-                            </Text>
-
-                            <View style={styles.chipsRow}>
-                                <TouchableOpacity
-                                    style={styles.chip}
-                                    onPress={() => Alert.alert("Categoría: Salario")}
-                                >
-                                    <Text style={styles.chipEmoji}>💼</Text>
-                                    <Text style={styles.chipText}>Salario</Text>
-                                </TouchableOpacity>
-
-                                <TouchableOpacity
-                                    style={styles.chip}
-                                    onPress={() => Alert.alert("Categoría: Otros")}
-                                >
-                                    <Text style={styles.chipEmoji}>➕</Text>
-                                    <Text style={styles.chipText}>Otros</Text>
-                                </TouchableOpacity>
-                            </View>
-                        </>
-                    ) : (
-                        <>
-                            <Text style={styles.sectionTitle}>Monto</Text>
-                            <TextInput
-                                style={styles.amountInput}
-                                placeholder="$0.00"
-                                placeholderTextColor="#7A8F90"
-                                keyboardType="numeric"
-                            />
-
-                            <Text
-                                style={[styles.sectionTitle, {marginTop: 16}]}
-                            >
-                                Seleccionar Categoría
-                            </Text>
-
-                            <View style={styles.chipsRow}>
-                                <TouchableOpacity
-                                    style={styles.chip}
-                                    onPress={() => Alert.alert("Categoría: Escuela")}
-                                >
-                                    <Text style={styles.chipEmoji}>🎓</Text>
-                                    <Text style={styles.chipText}>Escuela</Text>
-                                </TouchableOpacity>
-
-                                <TouchableOpacity
-                                    style={styles.chip}
-                                    onPress={() => Alert.alert("Categoría: Renta")}
-                                >
-                                    <Text style={styles.chipEmoji}>🏢</Text>
-                                    <Text style={styles.chipText}>Renta</Text>
-                                </TouchableOpacity>
-
-                                <TouchableOpacity
-                                    style={styles.chip}
-                                    onPress={() => Alert.alert("Categoría: Comida")}
-                                >
-                                    <Text style={styles.chipEmoji}>🍔</Text>
-                                    <Text style={styles.chipText}>Comida</Text>
-                                </TouchableOpacity>
-
-                                <TouchableOpacity
-                                    style={styles.chip}
-                                    onPress={() => Alert.alert("Categoría: Transporte")}
-                                >
-                                    <Text style={styles.chipEmoji}>🚌</Text>
-                                    <Text
-                                        style={styles.chipText}
-                                    >Transporte</Text>
-                                </TouchableOpacity>
-                            </View>
-
-                            <Text style={styles.sectionTitle}>Agregar
-                                                              Nota</Text>
-                            <TextInput
-                                style={styles.noteInput}
-                                placeholder="Opcional..."
-                                placeholderTextColor="#7A8F90"
-                                multiline
-                            />
-                        </>
-                    )}
-
-                    <TouchableOpacity style={styles.saveBtn} onPress={onSave}>
-                        <Text style={styles.saveText}>Guardar</Text>
-                    </TouchableOpacity>
-                </ScrollView>
+  return (
+    <Modal animationType="slide" transparent={true} visible={visible} onRequestClose={cerrarModal}>
+      <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            
+            <View style={styles.header}>
+              <Text style={styles.modalTitle}>
+                {operation === 'crear' ? 'Nueva Transacción' : 'Editar Transacción'}
+              </Text>
+              <TouchableOpacity onPress={cerrarModal}>
+                <Text style={styles.closeText}>Cerrar</Text>
+              </TouchableOpacity>
             </View>
-        </Modal>
-    );
+
+            <View style={styles.tabContainer}>
+              {['ingreso', 'gasto', 'presupuesto'].map((t) => (
+                <TouchableOpacity
+                  key={t}
+                  style={[styles.tabButton, { borderBottomColor: tipoActual === t ? '#004D40' : 'transparent' }]}
+                  onPress={() => setTipoActual(t)}
+                >
+                  <Text style={[styles.tabText, tipoActual === t && { color: '#004D40', fontWeight: 'bold' }]}>
+                    {t.charAt(0).toUpperCase() + t.slice(1)}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+
+            <ScrollView showsVerticalScrollIndicator={false}>
+              
+              <Text style={styles.label}>Monto</Text>
+              <View style={styles.inputContainer}>
+                <Text style={styles.currencySymbol}>$</Text>
+                <TextInput
+                  style={styles.inputMonto}
+                  placeholder="0.00"
+                  placeholderTextColor="#ccc"
+                  keyboardType="numeric"
+                  value={monto}
+                  onChangeText={setMonto}
+                />
+              </View>
+
+              <Text style={styles.label}>Seleccionar Categoría</Text>
+              <View style={styles.categoriasGrid}>
+                {categoriasEjemplo[tipoActual]?.map((cat) => (
+                  <TouchableOpacity
+                    key={cat}
+                    style={[styles.catButton, categoria === cat && styles.catActive]}
+                    onPress={() => setCategoria(cat)}
+                  >
+                    <Text style={[styles.catText, categoria === cat && { color: 'white' }]}>{cat}</Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+              
+              <TextInput
+                style={styles.inputGeneral}
+                placeholder="Otra categoría..."
+                value={categoria}
+                onChangeText={setCategoria}
+              />
+
+              <Text style={styles.label}>Agregar Nota (Opcional)</Text>
+              <TextInput
+                style={styles.inputGeneral}
+                placeholder="Descripción..."
+                value={nota}
+                onChangeText={setNota}
+              />
+
+              <TouchableOpacity style={styles.saveButton} onPress={handleGuardar}>
+                <Text style={styles.saveButtonText}>Guardar</Text>
+              </TouchableOpacity>
+            </ScrollView>
+
+          </View>
+        </View>
+      </TouchableWithoutFeedback>
+    </Modal>
+  );
 }
 
-const GREEN = "#0F6D66";
-const BORDER = "#E6ECEC";
-
 const styles = StyleSheet.create({
-    backdrop: {
-        flex: 1,
-        backgroundColor: "rgba(0,0,0,0.25)",
+    modalOverlay: { flex: 1, 
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    justifyContent: 'flex-end' 
     },
-    modal: {
-        position: "absolute",
-        left: 0,
-        right: 0,
-        bottom: 0,
-        backgroundColor: "#FFFFFF",
-        borderTopLeftRadius: 22,
-        borderTopRightRadius: 22,
-        paddingTop: 12,
-        paddingHorizontal: 20,
-        paddingBottom: 20,
+    modalContent: { backgroundColor: '#F5FFFF',
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    padding: 20, 
+    height: '85%' 
     },
-    tabs: {
-        flexDirection: "row",
-        justifyContent: "space-between",
-        borderBottomWidth: 1,
-        borderColor: BORDER,
-        paddingBottom: 10,
-        marginBottom: 12,
+    header: { flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 20 
     },
-    tabBtn: {paddingVertical: 6, flex: 1, alignItems: "center"},
-    tabBtnActive: {},
-    tabText: {color: GREEN, fontWeight: "600", opacity: 0.7},
-    tabTextActive: {opacity: 1, textDecorationLine: "underline"},
-    body: {paddingBottom: 40},
-    sectionTitle: {color: GREEN, fontWeight: "700", marginBottom: 6},
-    textInput: {
+    modalTitle: { fontSize: 20,
+    fontWeight: 'bold', 
+    color: '#004D40' 
+    },
+    closeText: { fontSize: 16,
+    fontWeight: 'bold',
+    color: '#999' 
+    },
+    tabContainer: { flexDirection: 'row',
+    justifyContent: 'space-around',
+    marginBottom: 20,
+    borderBottomWidth: 1,
+        borderBottomColor: '#ccc'
+        },
+  tabButton: { paddingVertical: 10,
+    borderBottomWidth: 3, 
+    flex: 1,
+    alignItems: 'center'
+        },
+    tabText: { color: '#666',
+    fontSize: 16 
+    },
+    label: { fontSize: 16, 
+    fontWeight: 'bold',
+    color: '#004D40',
+    marginTop: 15, 
+    marginBottom: 10 
+    },
+    inputContainer: { flexDirection: 'row',
+    alignItems: 'center', 
+    backgroundColor: 'white',
+    borderRadius: 10,
+    paddingHorizontal: 15, 
+    borderWidth: 1, 
+    borderColor: '#ddd'
+    },
+    currencySymbol: { fontSize: 24,
+        color: '#999',
+        marginRight: 10 
+        },
+    inputMonto: { flex: 1, 
+        fontSize: 32,
+        color: '#004D40', 
+        fontWeight: 'bold',
+        paddingVertical: 10 
+        },
+    categoriasGrid: { flexDirection: 'row',
+        flexWrap: 'wrap',
+        gap: 10, marginBottom: 10 
+        },
+    catButton: { paddingVertical: 8,
+        paddingHorizontal: 15, 
+        backgroundColor: 'white', 
+        borderRadius: 20,
         borderWidth: 1,
-        borderColor: BORDER,
-        borderRadius: 14,
-        height: 52,
-        paddingHorizontal: 16,
-        color: "#152A2E",
+        borderColor: '#ddd' 
+        },
+    catActive: { backgroundColor: '#004D40', 
+        borderColor: '#004D40' 
     },
-    amountInput: {
-        width: "100%",
-        height: 64,
+    catText: { color: '#004D40' 
+    },
+    inputGeneral: { backgroundColor: 'white',
+        borderRadius: 10, 
+        padding: 15,
         borderWidth: 1,
-        borderColor: BORDER,
-        borderRadius: 16,
-        paddingHorizontal: 16,
-        fontSize: 26,
-        fontWeight: "800",
-        color: "#152A2E",
-    },
-    chipsRow: {
-        flexDirection: "row",
-        justifyContent: "space-evenly",
-        marginTop: 8,
-        marginBottom: 16
-    },
-    chip: {
-        width: 78,
-        backgroundColor: "#F6FAFA",
-        borderWidth: 1,
-        borderColor: BORDER,
-        borderRadius: 14,
-        paddingVertical: 10,
-        alignItems: "center",
-    },
-    chipEmoji: {fontSize: 18, marginBottom: 4},
-    chipText: {fontSize: 12, color: "#2A3C3F"},
-    noteInput: {
-        borderWidth: 1,
-        borderColor: BORDER,
-        borderRadius: 12,
-        minHeight: 60,
-        padding: 12,
-        color: "#2A3C3F",
-        marginTop: 8,
-        marginBottom: 16,
-    },
-    saveBtn: {
-        backgroundColor: GREEN,
-        height: 52,
-        borderRadius: 26,
-        alignItems: "center",
-        justifyContent: "center",
-    },
-    saveText: {color: "white", fontWeight: "700"},
+        borderColor: '#ddd',
+            fontSize: 16,
+            marginBottom: 10 
+            },
+    saveButton: { backgroundColor: '#004D40',
+        borderRadius: 15,
+        padding: 18, 
+        alignItems: 'center',
+        marginTop: 20, 
+        marginBottom: 20 
+        },
+    saveButtonText: { color: 'white',
+        fontSize: 18,
+        fontWeight: 'bold'
+        },
 });
