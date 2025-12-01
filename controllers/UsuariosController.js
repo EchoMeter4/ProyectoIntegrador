@@ -56,12 +56,22 @@ class UsuariosController extends BaseController {
             } else {
                 throw new Error('El usuario debe contener correo o alias.');
             }
+            
+            
+            if (!fresh) {
+                 throw new Error('Credenciales Incorrectas. Revise su usuario o contraseña.');
+            }
 
             fresh.authenticate(usuario.password);
             return fresh;
         } catch (error) {
             
-            console.error(`Error al autenticar: ${error}`) 
+            if (error.message.includes('autenticar') || error.message.includes('contraseña incorrecta')) {
+                 console.warn(`Intento de autenticación fallido: ${error}`);
+                 throw new Error('Credenciales Incorrectas. Revise su usuario o contraseña.');
+            }
+            
+            console.warn(`Intento de autenticación fallido: ${error}`); 
             throw error;
         }
     }
@@ -106,7 +116,7 @@ class UsuariosController extends BaseController {
             
         } catch (error) {
             
-            console.error("Error al actualizar la contraseña:", error);
+            console.warn("Error al actualizar la contraseña (controlado):", error); 
             throw error; 
         }
     }
