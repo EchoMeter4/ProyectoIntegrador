@@ -8,7 +8,7 @@ export default class Usuario {
 
     validarTodo() {
         this.validarAlias()
-        // this.validarNombre() we're missing this actually lol
+        
         this.validarCorreo()
         this.validarPassword()
     }
@@ -33,10 +33,7 @@ export default class Usuario {
         )
     }
 
-    // validarNombre() {
-    //     if (this.nombre.length > 0) return true;
-    //     throw new Error('El nombre debe contener al menos un carácter.')
-    // }
+    
 
     toString() {
         return JSON.stringify(this);

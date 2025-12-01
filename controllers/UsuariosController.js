@@ -1,5 +1,6 @@
 import BaseController from "./BaseController";
 import UsuariosService from "../database/UsuariosService";
+import Usuario from "../models/Usuario"; 
 
 class UsuariosController extends BaseController {
     constructor() {
@@ -59,8 +60,54 @@ class UsuariosController extends BaseController {
             fresh.authenticate(usuario.password);
             return fresh;
         } catch (error) {
-            console.error(`Error al autenticar: ${error}`)
+            
+            console.error(`Error al autenticar: ${error}`) 
             throw error;
+        }
+    }
+    
+    
+    async updatePassword(userId, currentPassword, newPassword) {
+        try {
+            
+            const currentPassClean = (currentPassword || '').trim();
+            const newPassClean = (newPassword || '').trim(); 
+            
+            
+            const userRecord = await this.userService.getById(userId); 
+
+            if (!userRecord) {
+                throw new Error("Usuario no encontrado.");
+            }
+            
+            
+            const tempUser = new Usuario({ password: newPassClean });
+            tempUser.validarPassword(); 
+
+            
+            try {
+                userRecord.authenticate(currentPassClean); 
+            } catch (authError) {
+                
+                throw new Error("La contraseña actual es incorrecta.");
+            }
+            
+            
+            const updated = await this.userService.updatePassword(userId, newPassClean);
+
+            if (!updated) {
+                throw new Error("No se pudo actualizar la contraseña en la base de datos.");
+            }
+            
+            this.notifyListeners(); 
+            console.log(`Contraseña actualizada para el usuario ID: ${userId}`);
+            
+            return true;
+            
+        } catch (error) {
+            
+            console.error("Error al actualizar la contraseña:", error);
+            throw error; 
         }
     }
 }

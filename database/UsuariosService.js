@@ -1,4 +1,3 @@
-
 import DatabaseService from "./DatabaseService";
 import Usuario from "../models/Usuario";
 
@@ -52,6 +51,21 @@ export default class UsuariosService {
             WHERE id = ?
         `, alias, correo, password, id);
     }
+
+    
+    async updatePassword(userId, newPassword) {
+        const db = this.dbService.getDB();
+        if (!db) throw new Error("Base de datos no disponible.");
+
+        const result = await db.runAsync(
+            'UPDATE usuarios SET password = ? WHERE id = ?',
+            [newPassword, userId]
+        );
+
+        
+        return result.changes > 0;
+    }
+
 
     async getById(id) {
         const db = this.dbService.getDB();
