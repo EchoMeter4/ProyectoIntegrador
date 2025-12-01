@@ -10,7 +10,7 @@ import {
     StatusBar,
     Image, Alert,
 } from 'react-native';
-
+import { Ionicons } from '@expo/vector-icons';
 import {useNavigation, StackActions} from "@react-navigation/native"; 
 import {useAuth} from "../components/AuthContext";
 import Usuario from "../models/Usuario";
@@ -22,9 +22,15 @@ export default function App() {
     const navigation = useNavigation();
 
     const [usuario, setUsuario] = useState('');
-    const [correo, setCorreo] = useState('');
+    const [correo, setCorreo] = useState(''); 
     const [contrasena, setContrasena] = useState('');
+    const [isPasswordVisible, setIsPasswordVisible] = useState(false); 
+
     const {login} = useAuth();
+
+    const togglePasswordVisibility = () => {
+        setIsPasswordVisible(prev => !prev);
+    };
 
     const handleRegistro = async () => {
         try {
@@ -32,7 +38,7 @@ export default function App() {
             const correoLimpio = correo.trim();
             const contrasenaLimpia = contrasena.trim();
 
-            if (!usuarioLimpio && !correoLimpio && !contrasenaLimpia) {
+            if (!usuarioLimpio || !correoLimpio || !contrasenaLimpia) {
                 Alert.alert('Error', 'Rellena todos los campos.');
                 return;
             }
@@ -53,10 +59,7 @@ export default function App() {
 
             const newUser = await usuariosController.crearUsuario(nuevoUsuario);
             
-            
             await login(newUser);
-            
-            
             
         } catch (error) {
             console.error('Error RegisterScreen: ', error);
@@ -73,6 +76,7 @@ export default function App() {
                 contentContainerStyle={styles.scrollContainer}
                 keyboardShouldPersistTaps="always" 
             >
+                
                 
                 
                 <View style={styles.logoContainer}>
@@ -116,13 +120,21 @@ export default function App() {
                             placeholderTextColor={COLORS.placeholderText}
                             value={contrasena}
                             onChangeText={setContrasena} 
-                            secureTextEntry={true} 
+                            
+                            secureTextEntry={!isPasswordVisible} 
                         />
                         
-                        <Image
-                            source={require('../assets/ojo.png')}
-                            style={styles.eyeIconImage}
-                        />
+                        
+                        <TouchableOpacity
+                            onPress={togglePasswordVisibility}
+                            style={styles.eyeIconTouchable}
+                        >
+                            <Ionicons 
+                                name={isPasswordVisible ? 'eye-off' : 'eye'} 
+                                size={24} 
+                                color={COLORS.placeholderText}
+                            />
+                        </TouchableOpacity>
                     </View>
 
                     <TouchableOpacity style={styles.primaryButton} onPress={handleRegistro}>
@@ -169,10 +181,10 @@ const styles = StyleSheet.create({
         width: 180,
         height: 180,
     },
-    eyeIconImage: {
-        width: 24,
-        height: 24,
-        marginRight: 5,
+    
+    eyeIconTouchable: { 
+        padding: 5,
+        marginLeft: 10,
     },
     card: {
         width: '90%',

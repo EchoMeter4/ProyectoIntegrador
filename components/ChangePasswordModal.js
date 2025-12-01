@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Modal, View, Text, StyleSheet, TextInput, TouchableOpacity, Alert, KeyboardAvoidingView, ScrollView, ActivityIndicator } from 'react-native';
+import { Ionicons } from '@expo/vector-icons'; 
 import { useAuth } from './AuthContext'; 
 
 import UserControllerInstance from '../controllers/UsuariosController'; 
@@ -8,12 +9,14 @@ export default function ChangePasswordModal({ visible, onClose }) {
     const { userId, logout } = useAuth();
     
     
-    
     const [currentPasswordInput, setCurrentPasswordInput] = useState('');
     const [newPasswordInput, setNewPasswordInput] = useState('');
     const [confirmPasswordInput, setConfirmPasswordInput] = useState('');
     const [loading, setLoading] = useState(false);
 
+    
+    const [isVisible, setIsVisible] = useState(false);
+    
     const handlePasswordChange = async () => {
         
         const currentPassword = (currentPasswordInput || '').trim();
@@ -43,7 +46,6 @@ export default function ChangePasswordModal({ visible, onClose }) {
         setLoading(true);
         try {
             
-            
             await UserControllerInstance.updatePassword(userId, currentPassword, newPassword);
 
             Alert.alert('Éxito', 'Tu contraseña ha sido actualizada. Por seguridad, debes iniciar sesión de nuevo.');
@@ -56,7 +58,6 @@ export default function ChangePasswordModal({ visible, onClose }) {
             logout(); 
 
         } catch (error) {
-            
             
             console.warn('Error controlado al actualizar contraseña:', error.message); 
             
@@ -78,29 +79,48 @@ export default function ChangePasswordModal({ visible, onClose }) {
                 <View style={styles.modalView}>
                     <Text style={styles.modalTitle}>Cambiar Contraseña</Text>
                     
-                    <TextInput
-                        style={styles.input}
-                        placeholder="Contraseña Actual"
-                        secureTextEntry={true}
-                        value={currentPasswordInput}
-                        onChangeText={text => setCurrentPasswordInput(text)} 
-                    />
-
-                    <TextInput
-                        style={styles.input}
-                        placeholder="Nueva Contraseña"
-                        secureTextEntry={true}
-                        value={newPasswordInput}
-                        onChangeText={text => setNewPasswordInput(text)}
-                    />
                     
-                    <TextInput
-                        style={styles.input}
-                        placeholder="Confirmar Nueva Contraseña"
-                        secureTextEntry={true}
-                        value={confirmPasswordInput}
-                        onChangeText={text => setConfirmPasswordInput(text)}
-                    />
+                    <View style={styles.passwordInputContainer}>
+                        <TextInput
+                            style={styles.inputField}
+                            placeholder="Contraseña Actual"
+                            
+                            secureTextEntry={!isVisible} 
+                            value={currentPasswordInput}
+                            onChangeText={text => setCurrentPasswordInput(text)} 
+                        />
+                        <TouchableOpacity onPress={() => setIsVisible(!isVisible)} style={styles.eyeIconTouchable}>
+                            <Ionicons name={isVisible ? 'eye-off' : 'eye'} size={24} color="#A0A0A0" />
+                        </TouchableOpacity>
+                    </View>
+
+                    
+                    <View style={styles.passwordInputContainer}>
+                        <TextInput
+                            style={styles.inputField}
+                            placeholder="Nueva Contraseña"
+                            secureTextEntry={!isVisible}
+                            value={newPasswordInput}
+                            onChangeText={text => setNewPasswordInput(text)}
+                        />
+                         <TouchableOpacity onPress={() => setIsVisible(!isVisible)} style={styles.eyeIconTouchable}>
+                            <Ionicons name={isVisible ? 'eye-off' : 'eye'} size={24} color="#A0A0A0" />
+                        </TouchableOpacity>
+                    </View>
+                    
+                    
+                    <View style={styles.passwordInputContainer}>
+                        <TextInput
+                            style={styles.inputField}
+                            placeholder="Confirmar Nueva Contraseña"
+                            secureTextEntry={!isVisible}
+                            value={confirmPasswordInput}
+                            onChangeText={text => setConfirmPasswordInput(text)}
+                        />
+                        <TouchableOpacity onPress={() => setIsVisible(!isVisible)} style={styles.eyeIconTouchable}>
+                            <Ionicons name={isVisible ? 'eye-off' : 'eye'} size={24} color="#A0A0A0" />
+                        </TouchableOpacity>
+                    </View>
 
                     <View style={styles.buttonContainer}>
                         <TouchableOpacity 
@@ -158,7 +178,10 @@ const styles = StyleSheet.create({
         fontWeight: 'bold',
         color: '#004D40',
     },
-    input: {
+    
+    passwordInputContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
         height: 50,
         borderColor: '#ccc',
         borderWidth: 1,
@@ -166,6 +189,18 @@ const styles = StyleSheet.create({
         marginBottom: 15,
         paddingHorizontal: 15,
         backgroundColor: '#f9f9f9',
+    },
+    
+    inputField: {
+        flex: 1,
+        height: 50,
+        paddingRight: 10,
+        fontSize: 16,
+    },
+    
+    eyeIconTouchable: {
+        padding: 5,
+        marginLeft: 10,
     },
     buttonContainer: {
         flexDirection: 'row',
