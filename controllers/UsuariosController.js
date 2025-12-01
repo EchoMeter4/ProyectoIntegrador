@@ -59,7 +59,7 @@ class UsuariosController extends BaseController {
             
             
             if (!fresh) {
-                 throw new Error('Credenciales Incorrectas. Revise su usuario o contraseña.');
+                throw new Error('Credenciales Incorrectas. Revise su usuario o contraseña.');
             }
 
             fresh.authenticate(usuario.password);
@@ -67,12 +67,31 @@ class UsuariosController extends BaseController {
         } catch (error) {
             
             if (error.message.includes('autenticar') || error.message.includes('contraseña incorrecta')) {
-                 console.warn(`Intento de autenticación fallido: ${error}`);
-                 throw new Error('Credenciales Incorrectas. Revise su usuario o contraseña.');
+                console.warn(`Intento de autenticación fallido: ${error}`);
+                throw new Error('Credenciales Incorrectas. Revise su usuario o contraseña.');
             }
             
             console.warn(`Intento de autenticación fallido: ${error}`); 
             throw error;
+        }
+    }
+    
+    
+    async loginById(userId) {
+        try {
+            
+            const user = await this.userService.getById(userId); 
+            
+            if (!user || !user.id) {
+                throw new Error('Usuario no válido o no encontrado para biometría.');
+            }
+
+            
+            return user; 
+        } catch (error) {
+            console.warn(`Error al intentar login por ID (Biometría): ${error}`);
+            
+            throw new Error('Fallo al cargar el perfil de usuario para acceso rápido.'); 
         }
     }
     

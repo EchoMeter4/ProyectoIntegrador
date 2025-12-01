@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     StyleSheet,
     Text,
@@ -12,20 +12,48 @@ import {
     Alert,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import * as LocalAuthentication from 'expo-local-authentication'; 
+import { getBiometricPreference } from '../utils/BiometricStorage'; 
+import UsuariosController from "../controllers/UsuariosController"; 
 import {useAuth} from "../components/AuthContext";
 import Usuario from "../models/Usuario";
 import {isValidEmail} from "../utils/utils";
 
+const usuariosController = UsuariosController; 
+
 export default function LoginScreen({ navigation }) {
     const [campoUsuario, setcampoUsuario] = useState('');
     const [contrasena, setContrasena] = useState('');
-    
-    
     const [isPasswordVisible, setIsPasswordVisible] = useState(false);
     
-    const {login} = useAuth();
+    
+    const [canAuthenticate, setCanAuthenticate] = useState(false); 
+    const [lastUserId, setLastUserId] = useState(null); 
+    
+    const {login, getLastUserId} = useAuth(); 
 
     
+    
+    useEffect(() => {
+        const checkBiometrics = async () => {
+            const lastId = await getLastUserId();
+            setLastUserId(lastId);
+
+            if (lastId) {
+                
+                const isBiometryEnabled = await LocalAuthentication.isEnrolledAsync();
+                
+                const isUserPreferenceSaved = await getBiometricPreference(lastId);
+
+                if (isBiometryEnabled && isUserPreferenceSaved) {
+                    setCanAuthenticate(true);
+                }
+            }
+        };
+        checkBiometrics();
+    }, []);
+
+
     const togglePasswordVisibility = () => {
         setIsPasswordVisible(prev => !prev);
     };
@@ -34,8 +62,7 @@ export default function LoginScreen({ navigation }) {
         const usuarioLimpio = campoUsuario.trim();
         const contrasenaLimpia = contrasena.trim();
 
-        
-        if (!usuarioLimpio && !contrasenaLimpia) {
+        if (!usuarioLimpio || !contrasenaLimpia) {
             Alert.alert('Error', 'Rellene todos los campos.');
             return;
         }
@@ -48,7 +75,6 @@ export default function LoginScreen({ navigation }) {
             return;
         }
 
-        
         const usuario = new Usuario({password: contrasenaLimpia});
         if (isValidEmail(usuarioLimpio)) {
             usuario.correo = campoUsuario;
@@ -56,12 +82,40 @@ export default function LoginScreen({ navigation }) {
             usuario.alias = campoUsuario
         }
 
-        
         try {
             await login(usuario);
         } catch (error) {
-            
             Alert.alert('Error de Autenticación', error.message);
+        }
+    };
+
+    
+    const handleBiometricLogin = async () => {
+        if (!lastUserId) {
+            Alert.alert('Error', 'Debe iniciar sesión al menos una vez para activar la biometría.');
+            return;
+        }
+
+        const result = await LocalAuthentication.authenticateAsync({
+            promptMessage: 'Inicia sesión con tu huella o rostro.',
+        });
+
+        if (result.success) {
+            
+            
+            try {
+                
+                const userObject = await usuariosController.loginById(lastUserId); 
+                await login(userObject); 
+            } catch (error) {
+                 Alert.alert('Error', 'Fallo al cargar el perfil de usuario.');
+            }
+
+        } else if (result.error === 'user_fallback' || result.error === 'user_cancel') {
+             
+             Alert.alert('Acción requerida', 'Introduce tu contraseña para continuar.');
+        } else {
+             Alert.alert('Fallo', 'Autenticación biométrica fallida. Inténtalo de nuevo.');
         }
     };
 
@@ -102,10 +156,8 @@ export default function LoginScreen({ navigation }) {
                             placeholderTextColor={COLORS.placeholderText}
                             value={contrasena}
                             onChangeText={setContrasena}
-                            
                             secureTextEntry={!isPasswordVisible}
                         />
-                        
                         <TouchableOpacity
                             onPress={togglePasswordVisibility}
                             style={styles.eyeIconTouchable}
@@ -124,6 +176,18 @@ export default function LoginScreen({ navigation }) {
                     >
                         <Text style={styles.loginButtonText}>Iniciar Sesión</Text>
                     </TouchableOpacity>
+                    
+                    
+                    {canAuthenticate && (
+                        <TouchableOpacity
+                            style={[styles.loginButton, styles.biometricButton]}
+                            onPress={handleBiometricLogin}
+                        >
+                            <Ionicons name="finger-print" size={24} color={COLORS.white} />
+                            <Text style={styles.biometricButtonText}> Acceso Biométrico</Text>
+                        </TouchableOpacity>
+                    )}
+
 
                     <TouchableOpacity 
                         style={styles.recoverPasswordButton}
@@ -239,6 +303,20 @@ const styles = StyleSheet.create({
         color: COLORS.white,
         fontSize: 18,
         fontWeight: 'bold',
+    },
+    
+    biometricButton: {
+        backgroundColor: '#18794e', 
+        flexDirection: 'row',
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginBottom: 25, 
+    },
+    biometricButtonText: {
+        color: COLORS.white,
+        fontSize: 16,
+        fontWeight: 'bold',
+        marginLeft: 5,
     },
     recoverPasswordButton: {
         alignItems: 'center',

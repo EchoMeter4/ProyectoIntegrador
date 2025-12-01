@@ -1,7 +1,9 @@
 import {createContext, useContext, useEffect, useState} from "react";
 import UsuariosController from "../controllers/UsuariosController";
+import AsyncStorage from '@react-native-async-storage/async-storage'; 
 
 const AuthContext = createContext(null);
+const LAST_USER_KEY = 'last_logged_user_id'; 
 
 const usuarioController = UsuariosController;
 
@@ -21,10 +23,17 @@ export function AuthProvider({children}) {
     const login = async (usuario) => {
         const user = await usuarioController.auth(usuario);
         setUser(user);
+        
+        
+        if (user && user.id) {
+            await AsyncStorage.setItem(LAST_USER_KEY, user.id.toString());
+        }
     }
 
-    const logout = () => {
+    const logout = async () => { 
         setUser(null);
+        
+        await AsyncStorage.removeItem(LAST_USER_KEY); 
     }
 
     
@@ -42,11 +51,29 @@ export function AuthProvider({children}) {
     }
     
     
+    const getLastUserId = async () => {
+        try {
+            const userIdString = await AsyncStorage.getItem(LAST_USER_KEY);
+            return userIdString ? parseInt(userIdString) : null;
+        } catch (e) {
+            console.error("Error al obtener el ID del último usuario:", e);
+            return null;
+        }
+    }
+    
+    
     const userId = user ? user.id : null;
 
     return (
         
-        <AuthContext.Provider value={{user, login, logout, recuperarPassword, userId}}>
+        <AuthContext.Provider value={{
+            user,
+            login,
+            logout,
+            recuperarPassword,
+            userId,
+            getLastUserId 
+        }}>
             {children}
         </AuthContext.Provider>
     )

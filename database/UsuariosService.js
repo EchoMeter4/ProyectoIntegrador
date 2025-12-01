@@ -51,7 +51,7 @@ export default class UsuariosService {
             WHERE id = ?
         `, alias, correo, password, id);
     }
-
+    
     
     async updatePassword(userId, newPassword) {
         const db = this.dbService.getDB();
@@ -67,10 +67,12 @@ export default class UsuariosService {
     }
 
 
+    
     async getById(id) {
         const db = this.dbService.getDB();
-        
-        const usuario = await db.getFirstAsync(`
+        if (!db) await this.initialize(); 
+
+        const usuario = await this.dbService.getDB().getFirstAsync(`
             SELECT * FROM usuarios WHERE id = ?
         `, id);
 
