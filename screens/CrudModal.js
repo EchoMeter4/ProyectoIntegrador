@@ -192,8 +192,6 @@ export default function CrudModal({ visible, setVisible, operation, type, itemEd
             </View>
 
             <ScrollView showsVerticalScrollIndicator={false}>
-              
-              <Text style={styles.label}>Monto</Text>
               <View style={styles.inputContainer}>
                 <Text style={styles.currencySymbol}>$</Text>
                 <TextInput

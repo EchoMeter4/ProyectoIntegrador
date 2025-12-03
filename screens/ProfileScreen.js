@@ -222,29 +222,29 @@ export default function ProfileScreen() {
 
                
 
-                <TouchableOpacity
+                {/*<TouchableOpacity*/}
 
-                    style={styles.option}
+                {/*    style={styles.option}*/}
 
-                    onPress={handleBiometricSetup}
+                {/*    onPress={handleBiometricSetup}*/}
 
-                >
+                {/*>*/}
 
-                    <Text style={styles.optionText}>Autenticación Biométrica</Text>
+                {/*    <Text style={styles.optionText}>Autenticación Biométrica</Text>*/}
 
-                   
+                {/*   */}
 
-                    <Ionicons
+                {/*    <Ionicons*/}
 
-                        name={biometricsEnabled ? "checkmark-circle" : "finger-print-outline"}
+                {/*        name={biometricsEnabled ? "checkmark-circle" : "finger-print-outline"}*/}
 
-                        size={22}
+                {/*        size={22}*/}
 
-                        color={biometricsEnabled ? "#004D40" : "#2B7A78"}
+                {/*        color={biometricsEnabled ? "#004D40" : "#2B7A78"}*/}
 
-                    />
+                {/*    />*/}
 
-                </TouchableOpacity>
+                {/*</TouchableOpacity>*/}
 
             </View>
 

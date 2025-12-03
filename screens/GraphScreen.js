@@ -11,6 +11,7 @@ import { useTransactionsBridge } from '../components/TransactionsBridge';
 const CHART_COLORS = ['#0F6D66', '#4DB6AC', '#80CBC4', '#B2DFDB', '#E0F2F1', '#26A69A', '#9E9E9E', '#E57373'];
 const screenWidth = Dimensions.get("window").width;
 const chartWidth = screenWidth - 80;
+const pieWidth = screenWidth - 80;
 
 
 const getShortMonthName = (dateString) => {
@@ -284,14 +285,15 @@ export default function GraphScreen() {
                         {hasCurrentMonthData ? (
                             <PieChart
                                 data={pieChartData}
-                                width={screenWidth - 40}
+                                width={pieWidth}
                                 height={200}
                                 chartConfig={chartConfig}
                                 accessor={'population'}
                                 backgroundColor={'transparent'}
-                                paddingLeft={'15'}
-                                center={[8, 0]}
-                                absolute
+                                paddingLeft={'0'}
+                                center={[(screenWidth / 2) - 120, 0]}
+                                hasLegend={false}
+                                absolute={false}
                                 style={styles.chart}
                             />
                         ) : (
@@ -315,14 +317,15 @@ export default function GraphScreen() {
                         {hasIncomeData ? (
                             <PieChart
                                 data={incomePieData}
-                                width={screenWidth - 40}
+                                width={pieWidth}
                                 height={200}
                                 chartConfig={chartConfig}
                                 accessor={'population'}
                                 backgroundColor={'transparent'}
-                                paddingLeft={'15'}
-                                center={[8, 0]}
-                                absolute
+                                paddingLeft={'0'}
+                                center={[(screenWidth / 2) - 120, 0]}
+                                hasLegend={false}
+                                absolute={false}
                                 style={styles.chart}
                             />
                         ) : (
