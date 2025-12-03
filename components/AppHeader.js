@@ -4,7 +4,7 @@ import {MaterialIcons} from "@expo/vector-icons";
 import {useNavigation} from "@react-navigation/native";
 
 
-import { useTransactions } from "./TransactionsContext"; 
+import { useTransactionsBridge } from "./TransactionsBridge";
 
 
 const formatMonthYear = (isoDate) => {
@@ -32,7 +32,7 @@ export default function AppHeader() {
     const { 
         filterMonthYear, 
         setFilterMonthYear 
-    } = useTransactions();
+    } = useTransactionsBridge();
 
     
     const handleMonthNavigation = (direction) => {

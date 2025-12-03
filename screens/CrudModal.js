@@ -12,7 +12,7 @@ import {
   TouchableWithoutFeedback
 } from 'react-native';
 
-import { useTransactions } from '../components/TransactionsContext';
+import { useTransactionsBridge } from '../components/TransactionsBridge';
 
 export default function CrudModal({ visible, setVisible, operation, type, itemEditar }) {
   
@@ -21,7 +21,7 @@ export default function CrudModal({ visible, setVisible, operation, type, itemEd
   const [nota, setNota] = useState('');
   const [tipoActual, setTipoActual] = useState('gasto'); 
 
-  const { agregarTransaccion, editarTransaccion } = useTransactions();
+  const { agregarTransaccion, editarTransaccion } = useTransactionsBridge();
 
   const categoriasEjemplo = {
     gasto: ['Comida', 'Transporte', 'Renta', 'Escuela', 'Salud', 'Entretenimiento'],

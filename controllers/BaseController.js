@@ -1,4 +1,3 @@
-import DatabaseService from "../database/DatabaseService";
 
 export default class BaseController {
     constructor() {

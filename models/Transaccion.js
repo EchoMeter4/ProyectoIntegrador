@@ -1,0 +1,50 @@
+export default class Transaccion {
+    constructor({ id, id_usuario, monto, categoria, descripcion = '', fecha, tipo }) {
+        this.id = id;
+        this.id_usuario = id_usuario;
+        this.monto = monto;
+        this.categoria = categoria;
+        this.descripcion = descripcion;
+        this.fecha = fecha;
+        this.tipo = tipo;
+    }
+
+    validarCamposRequeridos() {
+        if (!this.id_usuario) {
+            throw new Error('La transacción necesita un usuario asociado.');
+        }
+        if (!this.monto && this.monto !== 0) {
+            throw new Error('El monto es obligatorio.');
+        }
+        if (!this.categoria) {
+            throw new Error('La categoría es obligatoria.');
+        }
+        if (!this.tipo) {
+            throw new Error('El tipo de transacción es obligatorio.');
+        }
+        if (!this.fecha) {
+            throw new Error('La fecha es obligatoria.');
+        }
+    }
+
+    normalizarMonto() {
+        if (typeof this.monto === 'string') {
+            const limpio = this.monto.replace(/[$,\s]/g, '');
+            this.monto = limpio.length ? limpio : '0';
+        }
+    }
+
+    prepararParaPersistencia() {
+        this.normalizarMonto();
+        this.validarCamposRequeridos();
+        return {
+            id_usuario: this.id_usuario,
+            monto: this.monto,
+            categoria: this.categoria,
+            descripcion: this.descripcion || '',
+            fecha: this.fecha,
+            tipo: this.tipo,
+        };
+    }
+}
+

@@ -13,7 +13,7 @@ import CrudModal from "./CrudModal";
 import AppHeader from "../components/AppHeader";
 
 import { usePreferences } from "../components/PreferencesContext";
-import { useTransactions } from "../components/TransactionsContext"; 
+import { useTransactionsBridge } from "../components/TransactionsBridge";
 
 
 
@@ -33,7 +33,7 @@ export default function PantallaTransacciones() {
         activeFilter, 
         setActiveFilter,
         
-    } = useTransactions(); 
+    } = useTransactionsBridge();
 
     
     

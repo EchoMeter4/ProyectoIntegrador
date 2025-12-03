@@ -4,7 +4,7 @@ import { PieChart, BarChart } from "react-native-chart-kit";
 import AppHeader from "../components/AppHeader";
 import Navbar from '../components/Navbar';
 import CrudModal from "./CrudModal";
-import { useTransactions } from '../components/TransactionsContext';
+import { useTransactionsBridge } from '../components/TransactionsBridge';
 
 
 const CHART_COLORS = ['#0F6D66', '#4DB6AC', '#80CBC4', '#B2DFDB', '#E0F2F1', '#26A69A', '#9E9E9E', '#E57373'];
@@ -120,8 +120,8 @@ export default function GraphScreen() {
     const toggleModal = () => setShowModal(!showModal);
 
     
-    const { transacciones, getAllTransactionsForCharts, filterMonthYear } = useTransactions(); 
-    
+    const { transacciones, getAllTransactionsForCharts, filterMonthYear } = useTransactionsBridge();
+
     const pieChartData = useCategoryExpenseData(transacciones);
     const hasCurrentMonthData = transacciones.length > 0 && pieChartData.length > 0;
     
