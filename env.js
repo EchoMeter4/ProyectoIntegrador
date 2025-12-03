@@ -1,5 +1,5 @@
 const env = {
-  debug_mode: false,
+  debug_mode: true,
 };
 
 export default env;

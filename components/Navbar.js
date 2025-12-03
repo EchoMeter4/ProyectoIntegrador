@@ -14,10 +14,22 @@ export default function navbar({toggleModal, currentRoute}) {
                     <View style={[styles.iconBubble, currentRoute === 'Operaciones' && styles.iconBubbleActive]}>
                         <Text style={styles.iconText}>≡</Text>
                     </View>
-                    <Text style={[styles.navLabel, currentRoute === 'Operaciones' && styles.navLabelActive]}>Ops</Text>
+                    <Text style={[styles.navLabel, currentRoute === 'Operaciones' && styles.navLabelActive]} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.8}>
+                        Operaciones
+                    </Text>
                 </TouchableOpacity>
 
-                <View style={styles.divider} />
+                <TouchableOpacity
+                    style={styles.navItem}
+                    onPress={() => navigation.navigate('Presupuestos')}
+                >
+                    <View style={[styles.iconBubble, currentRoute === 'Presupuestos' && styles.iconBubbleActive]}>
+                        <Text style={styles.iconText}>📦</Text>
+                    </View>
+                    <Text style={[styles.navLabel, currentRoute === 'Presupuestos' && styles.navLabelActive]} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.8}>
+                        Presupuestos
+                    </Text>
+                </TouchableOpacity>
 
                 <TouchableOpacity
                     style={styles.navItem}
@@ -28,24 +40,13 @@ export default function navbar({toggleModal, currentRoute}) {
                     </View>
                     <Text
                         style={[styles.navLabel, currentRoute === 'Dashboard' && styles.navLabelActive]}
+                        numberOfLines={1}
+                        adjustsFontSizeToFit
+                        minimumFontScale={0.8}
                     >
                         Dashboard
                     </Text>
                 </TouchableOpacity>
-
-                <View style={styles.divider} />
-
-                <TouchableOpacity
-                    style={styles.navItem}
-                    onPress={() => navigation.navigate('Presupuestos')}
-                >
-                    <View style={[styles.iconBubble, currentRoute === 'Presupuestos' && styles.iconBubbleActive]}>
-                        <Text style={styles.iconText}>📦</Text>
-                    </View>
-                    <Text style={[styles.navLabel, currentRoute === 'Presupuestos' && styles.navLabelActive]}>Presus</Text>
-                </TouchableOpacity>
-
-                <View style={styles.divider} />
 
                 <TouchableOpacity
                     style={styles.navItem} onPress={() => toggleModal()}
@@ -53,7 +54,7 @@ export default function navbar({toggleModal, currentRoute}) {
                     <View style={styles.iconBubble}>
                         <Text style={styles.iconText}>＋</Text>
                     </View>
-                    <Text style={styles.navLabel}>Agregar</Text>
+                    <Text style={styles.navLabel} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.8}>Agregar</Text>
                 </TouchableOpacity>
             </View>
         </View>
@@ -62,20 +63,24 @@ export default function navbar({toggleModal, currentRoute}) {
 
 const styles = StyleSheet.create({
     navLabel: {
-        fontSize: 12,
-        color: "#0D2230"
+        fontSize: 11,
+        color: "#0D2230",
+        textAlign: 'center',
+        flexWrap: 'nowrap',
+        includeFontPadding: false,
+        flexShrink: 1,
     },
     navLabelActive: {
         fontWeight: "600"
     },
     iconBubble: {
-        width: 44,
-        height: 36,
+        width: 40,
+        height: 32,
         borderRadius: 12,
         backgroundColor: "transparent",
         alignItems: "center",
         justifyContent: "center",
-        marginBottom: 4,
+        marginBottom: 2,
     },
     iconBubbleActive: {
         backgroundColor: "#FFFFFF",
@@ -90,9 +95,10 @@ const styles = StyleSheet.create({
         color: "#0D2230"
     },
     navItem: {
+        flex: 1,
         alignItems: "center",
         justifyContent: "center",
-        width: "32%"
+        paddingHorizontal: 4,
     },
     bottomWrap: {
         position: "absolute",
@@ -104,16 +110,10 @@ const styles = StyleSheet.create({
         backgroundColor: "rgba(238, 243, 243, 0.97)",
         borderRadius: 22,
         paddingVertical: 10,
-        paddingHorizontal: 14,
+        paddingHorizontal: 10,
         flexDirection: "row",
         justifyContent: "space-between",
         alignItems: "center",
-    },
-    divider: {
-        width: 1,
-        height: 30,
-        backgroundColor: '#D0DEDD',
-        marginHorizontal: 4,
-        alignSelf: 'center',
+        columnGap: 4,
     },
 });

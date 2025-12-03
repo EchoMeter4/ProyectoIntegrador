@@ -258,7 +258,7 @@ const styles = StyleSheet.create({
         backgroundColor: FONDO,
     },
     areaScroll: {
-        paddingBottom: 80,
+        paddingBottom: 120,
     },
     tarjetaLista: {
         backgroundColor: "#fff",

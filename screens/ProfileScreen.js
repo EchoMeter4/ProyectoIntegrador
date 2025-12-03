@@ -256,19 +256,19 @@ export default function ProfileScreen() {
 
 
 
-                <TouchableOpacity
+                {/*<TouchableOpacity*/}
 
-                    style={styles.option}
+                {/*    style={styles.option}*/}
 
-                    onPress={() => navigation.navigate('Notifications')}
+                {/*    onPress={() => navigation.navigate('Notifications')}*/}
 
-                >
+                {/*>*/}
 
-                    <Text style={styles.optionText}>Notificaciones</Text>
+                {/*    <Text style={styles.optionText}>Notificaciones</Text>*/}
 
-                    <Ionicons name="notifications-outline" size={22} color="#2B7A78" />
+                {/*    <Ionicons name="notifications-outline" size={22} color="#2B7A78" />*/}
 
-                </TouchableOpacity>
+                {/*</TouchableOpacity>*/}
 
             </View>
 

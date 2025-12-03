@@ -37,17 +37,12 @@ export function AuthProvider({children}) {
     }
 
     
-    const recuperarPassword = async (email) => {
-        
+    const recuperarPassword = async (identificador, nuevaPassword) => {
         if (usuarioController.recuperarPassword) {
-            return await usuarioController.recuperarPassword(email);
+            return await usuarioController.recuperarPassword(identificador, nuevaPassword);
         }
-        
-        
-        console.log(`Solicitud de recuperación para: ${email}`);
-        
-        
-        return true; 
+        console.log(`Solicitud de recuperación para: ${identificador}`);
+        return true;
     }
     
     

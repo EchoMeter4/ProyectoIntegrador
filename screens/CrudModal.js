@@ -17,6 +17,7 @@ import { Picker } from '@react-native-picker/picker';
 
 import { useTransactionsBridge } from '../components/TransactionsBridge';
 import { usePresupuestosBridge } from '../components/PresupuestosContext';
+import { formatCurrency } from '../utils/utils';
 
 const formatDateLocal = (date) => {
   if (!(date instanceof Date) || Number.isNaN(date.getTime())) {
@@ -72,6 +73,15 @@ const digitsToDecimalString = (digits) => {
   return (Number(normalized) / 100).toFixed(2);
 };
 
+const decimalValueToDigits = (value) => {
+  if (value === null || value === undefined) return '0';
+  const numeric = Number(value);
+  if (Number.isFinite(numeric)) {
+    return Math.round(numeric * 100).toString();
+  }
+  return digitsFromCurrency(String(value));
+};
+
 export default function CrudModal({ visible, setVisible, operation, type, itemEditar }) {
   
   const [montoDigits, setMontoDigits] = useState('0');
@@ -84,8 +94,8 @@ export default function CrudModal({ visible, setVisible, operation, type, itemEd
   const [mostrarPicker, setMostrarPicker] = useState(false);
   const [mostrarPickerMes, setMostrarPickerMes] = useState(false);
 
-  const { agregarTransaccion, editarTransaccion } = useTransactionsBridge();
-  const { agregarPresupuesto, editarPresupuesto } = usePresupuestosBridge();
+  const { agregarTransaccion, editarTransaccion, getTransactionsForMonth } = useTransactionsBridge();
+  const { agregarPresupuesto, editarPresupuesto, obtenerPresupuestosPorMes } = usePresupuestosBridge();
 
   const categoriasEjemplo = {
     gasto: ['Comida', 'Transporte', 'Renta', 'Escuela', 'Salud', 'Entretenimiento'],
@@ -100,7 +110,7 @@ export default function CrudModal({ visible, setVisible, operation, type, itemEd
   useEffect(() => {
     if (visible) {
       if (operation === 'editar' && itemEditar) {
-        setMontoDigits(digitsFromCurrency(String(itemEditar.monto ?? '0')));
+        setMontoDigits(decimalValueToDigits(itemEditar.monto));
         setCategoria(itemEditar.categoria || '');
         setNota(itemEditar.descripcion || '');
         setTipoActual(itemEditar.tipo || 'gasto');
@@ -161,6 +171,25 @@ export default function CrudModal({ visible, setVisible, operation, type, itemEd
       month: parseInt(mesPresupuesto.substring(5,7), 10),
     };
 
+    const maybeAlertPresupuesto = async () => {
+      if (tipoActual !== 'gasto') return;
+      const mesAnio = nuevaTransaccion.fecha.substring(0, 7);
+      const [year, month] = mesAnio.split('-').map((value) => parseInt(value, 10));
+      const presupuestosMes = await obtenerPresupuestosPorMes(year, month);
+      const presupuestoCategoria = presupuestosMes.find((p) => p.categoria === nuevaTransaccion.categoria);
+      if (!presupuestoCategoria) return;
+      const transaccionesMes = await getTransactionsForMonth(mesAnio);
+      const totalCategoria = transaccionesMes
+        .filter((tx) => tx.tipo === 'gasto' && tx.categoria === nuevaTransaccion.categoria)
+        .reduce((acc, tx) => acc + (Number(tx.monto) || 0), 0);
+      if (totalCategoria > Number(presupuestoCategoria.monto)) {
+        Alert.alert(
+          'Presupuesto excedido',
+          `Has gastado ${formatCurrency(totalCategoria)} de ${formatCurrency(presupuestoCategoria.monto)} para ${presupuestoCategoria.categoria}.`
+        );
+      }
+    };
+
     try {
       if (tipoActual === 'presupuesto') {
         if (operation === 'crear' || !itemEditar) {
@@ -173,9 +202,11 @@ export default function CrudModal({ visible, setVisible, operation, type, itemEd
       } else {
         if (operation === 'crear' || !itemEditar) {
           await agregarTransaccion(nuevaTransaccion);
+          await maybeAlertPresupuesto();
           Alert.alert('¡Éxito!', 'Se agregó correctamente a tu lista.');
         } else {
           await editarTransaccion(itemEditar.id, nuevaTransaccion);
+          await maybeAlertPresupuesto();
           Alert.alert('¡Éxito!', 'Se actualizó correctamente.');
         }
       }
@@ -192,6 +223,8 @@ export default function CrudModal({ visible, setVisible, operation, type, itemEd
     Keyboard.dismiss();
   };
 
+  const isEditLocked = operation === 'editar';
+
   return (
     <Modal animationType="slide" transparent={true} visible={visible} onRequestClose={cerrarModal}>
       <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
@@ -200,26 +233,35 @@ export default function CrudModal({ visible, setVisible, operation, type, itemEd
             
             <View style={styles.header}>
               <Text style={styles.modalTitle}>
-                {operation === 'crear' ? 'Nueva Transacción' : 'Editar Transacción'}
+                {operation === 'crear' ? 'Agregar' : 'Editar'}
               </Text>
               <TouchableOpacity onPress={cerrarModal}>
                 <Text style={styles.closeText}>Cerrar</Text>
               </TouchableOpacity>
             </View>
 
-            <View style={styles.tabContainer}>
-              {['ingreso', 'gasto', 'presupuesto'].map((t) => (
-                <TouchableOpacity
-                  key={t}
-                  style={[styles.tabButton, { borderBottomColor: tipoActual === t ? '#004D40' : 'transparent' }]}
-                  onPress={() => setTipoActual(t)}
-                >
-                  <Text style={[styles.tabText, tipoActual === t && { color: '#004D40', fontWeight: 'bold' }]}>
-                    {t.charAt(0).toUpperCase() + t.slice(1)}
-                  </Text>
-                </TouchableOpacity>
-              ))}
-            </View>
+            {isEditLocked ? (
+              <View style={styles.lockedTypeBanner}>
+                <Text style={styles.lockedTypeText}>
+                  {tipoActual.charAt(0).toUpperCase() + tipoActual.slice(1)}
+                </Text>
+              </View>
+            ) : (
+              <View style={styles.tabContainer}>
+                {['ingreso', 'gasto', 'presupuesto'].map((t) => (
+                  <TouchableOpacity
+                    key={t}
+                    style={[styles.tabButton, { borderBottomColor: tipoActual === t ? '#004D40' : 'transparent' }]}
+                    onPress={() => !isEditLocked && setTipoActual(t)}
+                  >
+                    <Text style={[styles.tabText, tipoActual === t && { color: '#004D40', fontWeight: 'bold' }]}
+                    >
+                      {t.charAt(0).toUpperCase() + t.slice(1)}
+                    </Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+            )}
 
             <ScrollView showsVerticalScrollIndicator={false}>
               <View style={styles.inputContainer}>
@@ -247,13 +289,6 @@ export default function CrudModal({ visible, setVisible, operation, type, itemEd
                 ))}
               </View>
               
-              <TextInput
-                style={styles.inputGeneral}
-                placeholder="Otra categoría..."
-                value={categoria}
-                onChangeText={setCategoria}
-              />
-
               <Text style={styles.label}>Agregar Nota (Opcional)</Text>
               <TextInput
                 style={styles.inputGeneral}
@@ -378,7 +413,18 @@ marginBottom: 20,
  tabText: { color: '#666',
  fontSize: 16 
 },
- label: { fontSize: 16, 
+lockedTypeBanner: {
+  paddingVertical: 12,
+  alignItems: 'center',
+  borderBottomWidth: 1,
+  borderBottomColor: '#ccc',
+},
+lockedTypeText: {
+  fontSize: 18,
+  fontWeight: '700',
+  color: '#004D40',
+},
+ label: { fontSize: 16,
  fontWeight: 'bold',
  color: '#004D40',
  marginTop: 15, 
@@ -469,3 +515,4 @@ borderRadius: 15,
     borderRadius: 10,
  },
 });
+

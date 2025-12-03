@@ -42,9 +42,9 @@ export default function AppHeader() {
 
     return (
         <View style={styles.header}>
-            <Text style={styles.headerTitle}>Resumen</Text>
-            
-            
+            <Text style={styles.headerTitle}>Ahorra+ App</Text>
+
+
             <View style={styles.monthContainer}>
                 
                 

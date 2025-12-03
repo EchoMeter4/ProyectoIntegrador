@@ -9,6 +9,10 @@ import { usePresupuestosBridge } from '../components/PresupuestosContext';
 import { useTransactionsBridge } from '../components/TransactionsBridge';
 import { formatCurrency } from '../utils/utils';
 
+const VERDE = '#0F6D66';
+const FONDO = '#D2EFEC';
+const BORDE = '#E6ECEC';
+
 export default function PresupuestosScreen() {
     const [showModal, setShowModal] = useState(false);
     const [modalOperation, setModalOperation] = useState('crear');
@@ -23,7 +27,9 @@ export default function PresupuestosScreen() {
     }, [lastUpdated]);
 
     const currentBudgets = useMemo(() => {
-        return presupuestos.filter((p) => `${p.year}-${String(p.month).padStart(2, '0')}` === filterMonthYear);
+        return presupuestos.filter(
+            (p) => `${p.year}-${String(p.month).padStart(2, '0')}` === filterMonthYear
+        );
     }, [presupuestos, filterMonthYear]);
 
     const categoriasDisponibles = useMemo(() => {
@@ -33,7 +39,9 @@ export default function PresupuestosScreen() {
     }, [currentBudgets]);
 
     const presupuestosFiltrados = useMemo(() => {
-        return currentBudgets.filter((p) => (categoriaFiltro === 'all' ? true : p.categoria === categoriaFiltro));
+        return currentBudgets.filter((p) =>
+            categoriaFiltro === 'all' ? true : p.categoria === categoriaFiltro
+        );
     }, [currentBudgets, categoriaFiltro]);
 
     const gastosPorCategoria = useMemo(() => {
@@ -46,8 +54,18 @@ export default function PresupuestosScreen() {
     }, [transacciones]);
 
     const openModal = (item = null) => {
-        setEditingItem(item);
-        setModalOperation(item ? 'editar' : 'crear');
+        if (item) {
+            const monthValue = String(item.month).padStart(2, '0');
+            setEditingItem({
+                ...item,
+                tipo: 'presupuesto',
+                fecha: `${item.year}-${monthValue}-01`,
+            });
+            setModalOperation('editar');
+        } else {
+            setEditingItem(null);
+            setModalOperation('crear');
+        }
         setShowModal(true);
     };
 
@@ -68,12 +86,15 @@ export default function PresupuestosScreen() {
     };
 
     return (
-        <View style={styles.page}>
-            <ScrollView contentContainerStyle={styles.scrollArea}>
+        <View style={styles.pagina}>
+            <ScrollView contentContainerStyle={styles.areaScroll} showsVerticalScrollIndicator={false}>
                 <AppHeader />
-                <View style={styles.cardSection}>
-                    <View style={styles.headerRow}>
-                        <Text style={styles.title}>Presupuestos ({filterMonthYear})</Text>
+
+                <View style={styles.tarjetaLista}>
+                    <View style={styles.encabezadoLista}>
+                        <View style={styles.tituloFila}>
+                            <Text style={styles.sectionTitle}>Presupuestos ({filterMonthYear})</Text>
+                        </View>
                         <TouchableOpacity style={styles.addButton} onPress={() => openModal()}>
                             <Feather name="plus" size={18} color="#fff" />
                             <Text style={styles.addButtonText}>Nuevo</Text>
@@ -91,7 +112,12 @@ export default function PresupuestosScreen() {
                                 style={[styles.chip, categoriaFiltro === cat && styles.chipActiva]}
                                 onPress={() => setCategoriaFiltro(cat)}
                             >
-                                <Text style={[styles.chipText, categoriaFiltro === cat && styles.chipTextActiva]}>
+                                <Text
+                                    style={[
+                                        styles.chipText,
+                                        categoriaFiltro === cat && styles.chipTextActiva,
+                                    ]}
+                                >
                                     {cat === 'all' ? 'Todas' : cat}
                                 </Text>
                             </TouchableOpacity>
@@ -99,35 +125,77 @@ export default function PresupuestosScreen() {
                     </ScrollView>
 
                     {presupuestosFiltrados.length === 0 ? (
-                        <Text style={styles.noBudgets}>No tienes presupuestos definidos para este mes.</Text>
+                        <View style={styles.noBudgetsWrapper}>
+                            <Feather name="target" size={40} color="#ccc" />
+                            <Text style={styles.noBudgetsMain}>
+                                No tienes presupuestos definidos para este mes.
+                            </Text>
+                            <Text style={styles.noBudgetsSub}>
+                                Usa el botón "Nuevo" para agregar uno.
+                            </Text>
+                        </View>
                     ) : (
-                        presupuestosFiltrados.map((presupuesto) => {
+                        presupuestosFiltrados.map((presupuesto, idx) => {
                             const gastado = gastosPorCategoria[presupuesto.categoria] || 0;
                             const progreso = gastado / presupuesto.monto;
                             const danger = progreso >= 1;
+
                             return (
-                                <View key={presupuesto.id} style={styles.budgetCard}>
-                                    <View style={styles.budgetHeader}>
-                                        <View>
-                                            <Text style={styles.category}>{presupuesto.categoria}</Text>
-                                            <Text style={styles.amount}>{formatCurrency(gastado)} / {formatCurrency(presupuesto.monto)}</Text>
-                                        </View>
+                                <View
+                                    key={presupuesto.id || idx}
+                                    style={[
+                                        styles.filaPresupuesto,
+                                        idx === 0 && styles.filaPrimera,
+                                    ]}
+                                >
+                                    <View style={styles.budgetInfo}>
+                                        <Text style={styles.category}>
+                                            {presupuesto.categoria}
+                                        </Text>
+                                        <Text style={styles.amount}>
+                                            {formatCurrency(gastado)} /{' '}
+                                            {formatCurrency(presupuesto.monto)}
+                                        </Text>
+                                    </View>
+
+                                    <View style={styles.budgetRight}>
                                         <View style={styles.actions}>
-                                            <TouchableOpacity onPress={() => handleDelete(presupuesto.id)} style={styles.iconButton}>
-                                                <Feather name="trash-2" size={18} color="#C0392B" />
+                                            <TouchableOpacity
+                                                onPress={() => handleDelete(presupuesto.id)}
+                                                style={styles.toqueIcono}
+                                            >
+                                                <Feather
+                                                    name="trash-2"
+                                                    size={18}
+                                                    color="#C0392B"
+                                                />
                                             </TouchableOpacity>
-                                            <TouchableOpacity onPress={() => openModal(presupuesto)} style={styles.iconButton}>
-                                                <Feather name="edit-3" size={18} color="#0F6D66" />
+                                            <TouchableOpacity
+                                                onPress={() => openModal(presupuesto)}
+                                                style={styles.toqueIcono}
+                                            >
+                                                <Feather
+                                                    name="edit-3"
+                                                    size={18}
+                                                    color={VERDE}
+                                                />
                                             </TouchableOpacity>
                                         </View>
                                     </View>
-                                    <ProgressBar progress={Math.min(progreso, 1)} danger={danger} />
+
+                                    <View style={styles.progressWrapper}>
+                                        <ProgressBar
+                                            progress={Math.min(progreso, 1)}
+                                            danger={danger}
+                                        />
+                                    </View>
                                 </View>
                             );
                         })
                     )}
                 </View>
             </ScrollView>
+
             <Navbar toggleModal={() => openModal()} currentRoute="Presupuestos" />
             <CrudModal
                 visible={showModal}
@@ -140,38 +208,47 @@ export default function PresupuestosScreen() {
     );
 }
 
-const BG = '#D2EFEC';
-
 const styles = StyleSheet.create({
-    page: {
+    pagina: {
         flex: 1,
-        backgroundColor: BG,
+        backgroundColor: FONDO,
     },
-    scrollArea: {
-        paddingBottom: 80,
+    areaScroll: {
+        paddingBottom: 110,
     },
-    cardSection: {
-        marginTop: -30,
+    tarjetaLista: {
+        backgroundColor: '#fff',
+        marginTop: -20,
         marginHorizontal: 16,
         borderRadius: 16,
         paddingVertical: 14,
-        paddingHorizontal: 6,
+        paddingHorizontal: 16,
+        shadowColor: '#000',
+        shadowOpacity: 0.06,
+        shadowRadius: 8,
+        shadowOffset: { width: 0, height: 2 },
+        elevation: 2,
     },
-    headerRow: {
+    encabezadoLista: {
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'center',
-        marginBottom: 12,
+        marginBottom: 8,
     },
-    title: {
-        fontSize: 18,
+    tituloFila: {
+        flexShrink: 1,
+        paddingRight: 8,
+    },
+    sectionTitle: {
+        color: VERDE,
         fontWeight: '700',
-        color: '#0F6D66',
+        fontSize: 16,
+        marginLeft: 4,
     },
     addButton: {
         flexDirection: 'row',
         alignItems: 'center',
-        backgroundColor: '#0F6D66',
+        backgroundColor: VERDE,
         borderRadius: 12,
         paddingVertical: 6,
         paddingHorizontal: 12,
@@ -183,68 +260,79 @@ const styles = StyleSheet.create({
     },
     categoriasChips: {
         flexDirection: 'row',
-        paddingVertical: 6,
-        marginBottom: 12,
+        paddingVertical: 4,
+        marginBottom: 6,
     },
     chip: {
         paddingHorizontal: 14,
         paddingVertical: 6,
         borderRadius: 999,
         borderWidth: 1,
-        borderColor: '#C5D9D6',
-        backgroundColor: '#F5FCFB',
+        borderColor: BORDE,
+        backgroundColor: '#F4FBFB',
         marginRight: 8,
     },
     chipActiva: {
-        backgroundColor: '#0F6D66',
-        borderColor: '#0F6D66',
+        backgroundColor: VERDE,
+        borderColor: VERDE,
     },
     chipText: {
-        color: '#3A5858',
+        color: '#395657',
         fontWeight: '600',
     },
     chipTextActiva: {
         color: '#fff',
     },
-    noBudgets: {
-        color: '#78909C',
-        textAlign: 'center',
-        padding: 20,
-    },
-    budgetCard: {
-        backgroundColor: '#fff',
-        borderRadius: 14,
-        padding: 16,
-        marginBottom: 12,
-        shadowColor: '#000',
-        shadowOpacity: 0.05,
-        shadowRadius: 6,
-        shadowOffset: { width: 0, height: 2 },
-        elevation: 2,
-    },
-    budgetHeader: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
+    noBudgetsWrapper: {
+        padding: 40,
         alignItems: 'center',
-        marginBottom: 8,
+    },
+    noBudgetsMain: {
+        color: '#888',
+        marginTop: 10,
+        textAlign: 'center',
+    },
+    noBudgetsSub: {
+        color: '#aaa',
+        fontSize: 12,
+        marginTop: 4,
+        textAlign: 'center',
+    },
+    filaPresupuesto: {
+        borderTopWidth: 1,
+        borderColor: BORDE,
+        paddingVertical: 12,
+    },
+    filaPrimera: {
+        borderTopWidth: 0,
+    },
+    budgetInfo: {
+        marginBottom: 6,
     },
     category: {
-        fontSize: 16,
-        fontWeight: '600',
-        color: '#183236',
+        fontSize: 15,
+        fontWeight: '700',
+        color: VERDE,
     },
     amount: {
-        fontSize: 14,
+        fontSize: 13,
         fontWeight: '600',
         color: '#0F6D66',
     },
+    budgetRight: {
+        flexDirection: 'row',
+        justifyContent: 'flex-end',
+        alignItems: 'center',
+    },
     actions: {
         flexDirection: 'row',
-        gap: 8,
+        gap: 10,
     },
-    iconButton: {
+    toqueIcono: {
         padding: 6,
         borderRadius: 8,
-        backgroundColor: 'rgba(15, 109, 102, 0.08)',
+    },
+    progressWrapper: {
+        marginTop: 8,
     },
 });
