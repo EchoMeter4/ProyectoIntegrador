@@ -9,24 +9,70 @@ import {
   ScrollView,
   Alert,
   Keyboard,
-  TouchableWithoutFeedback
+  TouchableWithoutFeedback,
+  Platform,
 } from 'react-native';
+import DateTimePicker from '@react-native-community/datetimepicker';
+import { Picker } from '@react-native-picker/picker';
 
 import { useTransactionsBridge } from '../components/TransactionsBridge';
+
+const formatDateLocal = (date) => {
+  if (!(date instanceof Date) || Number.isNaN(date.getTime())) {
+    return '';
+  }
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+};
+
+const parseDateString = (dateString) => {
+  if (!dateString || !/^\d{4}-\d{2}-\d{2}$/.test(dateString)) {
+    return new Date();
+  }
+  const [year, month, day] = dateString.split('-').map((value) => parseInt(value, 10));
+  return new Date(year, month - 1, day);
+};
+
+const formatMonthKey = (date) => {
+  if (!(date instanceof Date) || Number.isNaN(date.getTime())) {
+    return '';
+  }
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  return `${year}-${month}`;
+};
+
+const parseMonthKey = (monthKey) => {
+  if (!monthKey || !/^\d{4}-\d{2}$/.test(monthKey)) {
+    return new Date();
+  }
+  const [year, month] = monthKey.split('-').map((value) => parseInt(value, 10));
+  return new Date(year, month - 1, 1);
+};
 
 export default function CrudModal({ visible, setVisible, operation, type, itemEditar }) {
   
   const [monto, setMonto] = useState('');
   const [categoria, setCategoria] = useState('');
   const [nota, setNota] = useState('');
-  const [tipoActual, setTipoActual] = useState('gasto'); 
+  const [tipoActual, setTipoActual] = useState('gasto');
+  const [fecha, setFecha] = useState(formatDateLocal(new Date()));
+  const [mesPresupuesto, setMesPresupuesto] = useState(formatMonthKey(new Date()));
+  const [mostrarPicker, setMostrarPicker] = useState(false);
+  const [mostrarPickerMes, setMostrarPickerMes] = useState(false);
 
   const { agregarTransaccion, editarTransaccion } = useTransactionsBridge();
 
   const categoriasEjemplo = {
     gasto: ['Comida', 'Transporte', 'Renta', 'Escuela', 'Salud', 'Entretenimiento'],
     ingreso: ['Salario', 'Ventas', 'Regalo', 'Inversión', 'Otros'],
-    presupuesto: ['Comida', 'Transporte', 'Renta', 'Ahorro']
+  };
+
+  const buildYears = () => {
+    const currentYear = new Date().getFullYear();
+    return Array.from({ length: 6 }).map((_, idx) => (currentYear - 2 + idx).toString());
   };
 
   useEffect(() => {
@@ -37,12 +83,31 @@ export default function CrudModal({ visible, setVisible, operation, type, itemEd
         setCategoria(itemEditar.categoria || '');
         setNota(itemEditar.descripcion || '');
         setTipoActual(itemEditar.tipo || 'gasto');
+        if ((itemEditar.tipo || 'gasto') === 'presupuesto') {
+          const mes = (itemEditar.fecha || '').substring(0, 7);
+          setMesPresupuesto(mes && /^\d{4}-\d{2}$/.test(mes) ? mes : formatMonthKey(new Date()));
+          setFecha('');
+        } else {
+          setFecha(
+            formatDateLocal(
+              parseDateString(itemEditar.fecha || formatDateLocal(new Date()))
+            )
+          );
+          setMesPresupuesto(formatMonthKey(new Date()));
+        }
       } else {
         
         setMonto('');
         setCategoria('');
         setNota('');
         setTipoActual(type || 'gasto');
+        if ((type || 'gasto') === 'presupuesto') {
+          setMesPresupuesto(formatMonthKey(new Date()));
+          setFecha('');
+        } else {
+          setFecha(formatDateLocal(new Date()));
+          setMesPresupuesto(formatMonthKey(new Date()));
+        }
       }
     }
   }, [visible, operation, itemEditar, type]);
@@ -54,14 +119,23 @@ export default function CrudModal({ visible, setVisible, operation, type, itemEd
       return;
     }
 
+    if (tipoActual !== 'presupuesto') {
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(fecha) || Number.isNaN(parseDateString(fecha).getTime())) {
+        Alert.alert("Fecha inválida", "Ingresa una fecha con formato AAAA-MM-DD.");
+        return;
+      }
+    } else {
+      if (!/^\d{4}-\d{2}$/.test(mesPresupuesto) || Number.isNaN(parseMonthKey(mesPresupuesto).getTime())) {
+        Alert.alert("Mes inválido", "Selecciona un mes con formato AAAA-MM.");
+        return;
+      }
+    }
+
     const nuevaTransaccion = {
       monto: monto,
       categoria: categoria,
       descripcion: nota,
-      
-      
-      fecha: new Date().toISOString().substring(0, 10), 
-      
+      fecha: tipoActual === 'presupuesto' ? `${mesPresupuesto}-01` : fecha,
       tipo: tipoActual
     };
 
@@ -134,7 +208,7 @@ export default function CrudModal({ visible, setVisible, operation, type, itemEd
 
               <Text style={styles.label}>Seleccionar Categoría</Text>
               <View style={styles.categoriasGrid}>
-                {categoriasEjemplo[tipoActual]?.map((cat) => (
+                {categoriasEjemplo[tipoActual === 'presupuesto' ? 'gasto' : tipoActual]?.map((cat) => (
                   <TouchableOpacity
                     key={cat}
                     style={[styles.catButton, categoria === cat && styles.catActive]}
@@ -159,6 +233,72 @@ export default function CrudModal({ visible, setVisible, operation, type, itemEd
                 value={nota}
                 onChangeText={setNota}
               />
+
+              {tipoActual !== 'presupuesto' && (
+                <>
+                  <Text style={styles.label}>Fecha</Text>
+                  <TouchableOpacity style={styles.dateButton} onPress={() => setMostrarPicker(true)}>
+                    <Text style={styles.dateButtonText}>{fecha}</Text>
+                  </TouchableOpacity>
+                  {mostrarPicker && (
+                    <DateTimePicker
+                      mode="date"
+                      display={Platform.OS === 'ios' ? 'inline' : 'calendar'}
+                      value={parseDateString(fecha || formatDateLocal(new Date()))}
+                      onChange={(event, selectedDate) => {
+                        if (Platform.OS === 'android') {
+                          setMostrarPicker(false);
+                        }
+                        if (event?.type === 'dismissed') return;
+                        if (selectedDate) {
+                          setFecha(formatDateLocal(selectedDate));
+                        }
+                      }}
+                    />
+                  )}
+                </>
+              )}
+
+              {tipoActual === 'presupuesto' && (
+                <>
+                  <Text style={styles.label}>Mes</Text>
+                  <View style={styles.monthPickerContainer}>
+                    <View style={styles.monthPickerBlock}>
+                      <Text style={styles.monthPickerLabel}>Mes</Text>
+                      <Picker
+                        selectedValue={mesPresupuesto.substring(5,7)}
+                        onValueChange={(monthValue) => {
+                          const year = mesPresupuesto.substring(0,4) || formatMonthKey(new Date()).substring(0,4);
+                          setMesPresupuesto(`${year}-${monthValue}`);
+                        }}
+                        style={styles.monthPicker}
+                        mode="dropdown"
+                      >
+                        {[...Array(12).keys()].map((idx) => {
+                          const value = String(idx + 1).padStart(2, '0');
+                          return <Picker.Item key={value} label={value} value={value} />;
+                        })}
+                      </Picker>
+                    </View>
+                    <View style={styles.monthPickerBlock}>
+                      <Text style={styles.monthPickerLabel}>Año</Text>
+                      <Picker
+                        selectedValue={mesPresupuesto.substring(0,4)}
+                        onValueChange={(yearValue) => {
+                          const month = mesPresupuesto.substring(5,7) || formatMonthKey(new Date()).substring(5,7);
+                          setMesPresupuesto(`${yearValue}-${month}`);
+                        }}
+                        style={styles.monthPicker}
+                        mode="dropdown"
+                      >
+                        {buildYears().map((year) => (
+                          <Picker.Item key={year} label={year} value={year} />
+                        ))}
+                      </Picker>
+                    </View>
+                  </View>
+                </>
+              )}
 
               <TouchableOpacity style={styles.saveButton} onPress={handleGuardar}>
                 <Text style={styles.saveButtonText}>Guardar</Text>
@@ -269,4 +409,35 @@ borderRadius: 15,
  fontSize: 18,
  fontWeight: 'bold'
      },
+ dateButton: {
+    backgroundColor: 'white',
+    borderRadius: 10,
+    padding: 15,
+    borderWidth: 1,
+    borderColor: '#ddd',
+    alignItems: 'center',
+    marginBottom: 10,
+ },
+ dateButtonText: {
+    fontSize: 16,
+    color: '#004D40',
+    fontWeight: '600',
+ },
+ monthPickerContainer: {
+    flexDirection: 'row',
+    gap: 10,
+    marginBottom: 10,
+ },
+ monthPickerBlock: {
+    flex: 1,
+ },
+ monthPickerLabel: {
+    fontSize: 12,
+    color: '#004D40',
+    marginBottom: 6,
+ },
+ monthPicker: {
+    backgroundColor: 'white',
+    borderRadius: 10,
+ },
 });

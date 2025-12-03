@@ -146,7 +146,7 @@ export default function GraphScreen() {
                     const amount = parseFloat(tx.monto) || 0;
                     if (tx.tipo === 'ingreso') {
                         ingresos += amount;
-                    } else if (tx.tipo === 'gasto' || tx.tipo === 'presupuesto') {
+                    } else if (tx.tipo === 'gasto') {
                         gastos += amount;
                     }
                 });
