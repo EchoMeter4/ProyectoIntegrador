@@ -30,14 +30,27 @@ const generateLastNMonths = (n) => {
     return months;
 };
 
+const generateMonthsEndingAt = (referenceMonth, count = 3) => {
+    if (!referenceMonth) return [];
+    const [year, month] = referenceMonth.split('-').map(Number);
+    const baseDate = new Date(year, month - 1, 1);
+    const months = [];
+    for (let i = count - 1; i >= 0; i--) {
+        const d = new Date(baseDate.getFullYear(), baseDate.getMonth() - i, 1);
+        const y = d.getFullYear();
+        const m = String(d.getMonth() + 1).padStart(2, '0');
+        months.push(`${y}-${m}`);
+    }
+    return months;
+};
+
 const useCategoryExpenseData = (transactions) => {
     return useMemo(() => {
         const expenseTotals = {};
         let grandTotal = 0;
-        
         transactions.forEach(tx => {
             if (tx.tipo === 'gasto' || tx.tipo === 'presupuesto') {
-                const amount = parseFloat(tx.monto) || 0; 
+                const amount = parseFloat(tx.monto) || 0;
                 grandTotal += amount;
                 expenseTotals[tx.categoria] = (expenseTotals[tx.categoria] || 0) + amount;
             }
@@ -64,90 +77,131 @@ const useCategoryExpenseData = (transactions) => {
     }, [transactions]);
 };
 
-
-const useMonthlyComparisonData = (getAllTransactionsForCharts) => {
-    const [monthlyData, setMonthlyData] = useState({ labels: [], datasets: [] });
-    const [loading, setLoading] = useState(true);
-
-    useEffect(() => {
-        const processData = async () => {
-            setLoading(true);
-            
-            const allTransactions = await getAllTransactionsForCharts(); 
-            
-            const totalsByMonth = {};
-            const monthsToShow = 3; 
-
-            allTransactions.forEach(tx => {
-                const monthKey = tx.fecha.substring(0, 7); 
+const useCategoryIncomeData = (transactions) => {
+    return useMemo(() => {
+        const incomeTotals = {};
+        let grandTotal = 0;
+        transactions.forEach(tx => {
+            if (tx.tipo === 'ingreso') {
                 const amount = parseFloat(tx.monto) || 0;
-
-                if (!totalsByMonth[monthKey]) {
-                    totalsByMonth[monthKey] = { ingreso: 0, gasto: 0 };
-                }
-
-                if (tx.tipo === 'ingreso') {
-                    totalsByMonth[monthKey].ingreso += amount;
-                } else if (tx.tipo === 'gasto' || tx.tipo === 'presupuesto') {
-                    totalsByMonth[monthKey].gasto += amount;
-                }
-            });
-            
-            const calendarMonths = generateLastNMonths(monthsToShow); 
-            
-            const labels = calendarMonths.map(getShortMonthName);
-            const incomeData = calendarMonths.map(month => totalsByMonth[month]?.ingreso || 0);
-            const expenseData = calendarMonths.map(month => totalsByMonth[month]?.gasto || 0);
-
-            setMonthlyData({
-                labels: labels,
-                datasets: [
-                    { data: incomeData, color: (opacity = 1) => `rgba(0, 179, 148, ${opacity})`, label: "Ingreso" },
-                    { data: expenseData, color: (opacity = 1) => `rgba(0, 77, 64, ${opacity})`, label: "Gasto" }
-                ]
-            });
-            setLoading(false);
-        };
-        processData();
-    }, [getAllTransactionsForCharts]);
-
-    return { monthlyData, loading };
+                grandTotal += amount;
+                incomeTotals[tx.categoria] = (incomeTotals[tx.categoria] || 0) + amount;
+            }
+        });
+        let colorIndex = 0;
+        const chartData = Object.keys(incomeTotals).map((category) => {
+            const amount = incomeTotals[category];
+            const percentage = grandTotal > 0 ? ((amount / grandTotal) * 100).toFixed(0) : 0;
+            const dataPoint = {
+                name: category,
+                population: amount,
+                percentage,
+                color: CHART_COLORS[colorIndex % CHART_COLORS.length],
+                legendFontColor: '#333',
+                legendFontSize: 14,
+            };
+            colorIndex++;
+            return dataPoint;
+        });
+        return chartData.sort((a, b) => b.population - a.population);
+    }, [transactions]);
 };
-
 
 export default function GraphScreen() {
     const [showModal, setShowModal] = useState(false);
     const toggleModal = () => setShowModal(!showModal);
 
-    
-    const { transacciones, getAllTransactionsForCharts, filterMonthYear } = useTransactionsBridge();
+    const { transacciones, getAllTransactionsForCharts, getTransactionsForMonth, filterMonthYear, lastUpdated } = useTransactionsBridge();
 
-    const pieChartData = useCategoryExpenseData(transacciones);
-    const hasCurrentMonthData = transacciones.length > 0 && pieChartData.length > 0;
-    
-    const { monthlyData, loading: loadingMonthly } = useMonthlyComparisonData(getAllTransactionsForCharts);
-    const hasMonthlyData = monthlyData.labels && monthlyData.labels.length > 0;
-    
+    const [currentMonthTransactions, setCurrentMonthTransactions] = useState(transacciones);
+    const [monthlyComparison, setMonthlyComparison] = useState({ labels: [], datasets: [] });
+    const [loadingMonthly, setLoadingMonthly] = useState(true);
+
+    useEffect(() => {
+        const fetchCurrentMonth = async () => {
+            const monthData = await getTransactionsForMonth(filterMonthYear);
+            setCurrentMonthTransactions(monthData);
+        };
+        fetchCurrentMonth();
+    }, [filterMonthYear, getTransactionsForMonth, lastUpdated]);
+
+    useEffect(() => {
+        const loadMonthlyWindow = async () => {
+            setLoadingMonthly(true);
+            const months = generateMonthsEndingAt(filterMonthYear, 3);
+            if (months.length === 0) {
+                setMonthlyComparison({ labels: [], datasets: [] });
+                setLoadingMonthly(false);
+                return;
+            }
+            const monthBatches = await Promise.all(
+                months.map((month) => getTransactionsForMonth(month))
+            );
+            const incomeData = [];
+            const expenseData = [];
+            monthBatches.forEach(batch => {
+                let ingresos = 0;
+                let gastos = 0;
+                batch.forEach(tx => {
+                    const amount = parseFloat(tx.monto) || 0;
+                    if (tx.tipo === 'ingreso') {
+                        ingresos += amount;
+                    } else if (tx.tipo === 'gasto' || tx.tipo === 'presupuesto') {
+                        gastos += amount;
+                    }
+                });
+                incomeData.push(ingresos);
+                expenseData.push(gastos);
+            });
+            setMonthlyComparison({
+                labels: months.map(getShortMonthName),
+                datasets: [
+                    { data: incomeData, color: (opacity = 1) => `rgba(0, 179, 148, ${opacity})`, label: 'Ingreso' },
+                    { data: expenseData, color: (opacity = 1) => `rgba(0, 77, 64, ${opacity})`, label: 'Gasto' },
+                ],
+            });
+            setLoadingMonthly(false);
+        };
+        loadMonthlyWindow();
+    }, [filterMonthYear, getTransactionsForMonth, lastUpdated]);
+
+    const pieChartData = useCategoryExpenseData(currentMonthTransactions);
+    const hasCurrentMonthData = currentMonthTransactions.length > 0 && pieChartData.length > 0;
+
+    const incomePieData = useCategoryIncomeData(currentMonthTransactions);
+    const hasIncomeData = currentMonthTransactions.length > 0 && incomePieData.length > 0;
+
+    const incomeSummary = useMemo(() => {
+        return transacciones
+            .filter(t => t.tipo === 'ingreso')
+            .reduce((acc, tx) => {
+                const amount = parseFloat(tx.monto) || 0;
+                acc[tx.categoria] = (acc[tx.categoria] || 0) + amount;
+                return acc;
+            }, {});
+    }, [transacciones]);
+
+    const incomeEntries = Object.entries(incomeSummary);
+
     const [currentYear, currentMonth] = filterMonthYear.split('-');
     const currentMonthFormatted = new Date(currentYear, currentMonth - 1).toLocaleDateString('es-ES', { month: 'long', year: 'numeric' });
-    
+
     const chartConfig = {
-        backgroundGradientFrom: "#fff",
-        backgroundGradientTo: "#fff",
-        color: (opacity = 1) => `rgba(0, 77, 64, ${opacity})`, 
+        backgroundGradientFrom: '#fff',
+        backgroundGradientTo: '#fff',
+        color: (opacity = 1) => `rgba(0, 77, 64, ${opacity})`,
         barPercentage: 0.6,
-        decimalPlaces: 0, 
+        decimalPlaces: 0,
     };
-    
+
     if (loadingMonthly) {
-          return (
-              <View style={styles.loadingContainer}>
-                  <ActivityIndicator size="large" color="#0F6D66" />
-                  <Text style={styles.loadingText}>Cargando datos históricos...</Text>
-              </View>
-          );
+        return (
+            <View style={styles.loadingContainer}>
+                <ActivityIndicator size="large" color="#0F6D66" />
+                <Text style={styles.loadingText}>Cargando datos históricos...</Text>
+            </View>
+        );
     }
-    
 
     return (
         <View style={styles.page}>
@@ -158,11 +212,10 @@ export default function GraphScreen() {
                     
                     <View style={styles.card}>
                         <Text style={styles.cardTitle}>Gastos e Ingresos Mensuales</Text>
-                        
-                        {hasMonthlyData ? (
+                        {monthlyComparison.labels.length > 0 ? (
                             <BarChart
-                                data={monthlyData}
-                                width={screenWidth - 40} 
+                                data={monthlyComparison}
+                                width={screenWidth - 40}
                                 height={250}
                                 chartConfig={chartConfig}
                                 verticalLabelRotation={-20}
@@ -173,67 +226,68 @@ export default function GraphScreen() {
                         ) : (
                             <Text style={styles.noDataText}>No hay suficientes datos en los últimos 3 meses.</Text>
                         )}
-                        
                     </View>
 
                     <View style={styles.card}>
                         <Text style={styles.cardTitle}>Gastos por Categoría ({currentMonthFormatted})</Text>
-                        
                         {hasCurrentMonthData ? (
                             <PieChart
                                 data={pieChartData}
-                                width={screenWidth - 40} 
+                                width={screenWidth - 40}
                                 height={200}
                                 chartConfig={chartConfig}
-                                accessor={"population"} 
-                                backgroundColor={"transparent"}
-                                paddingLeft={"15"}
-                                center={[8, 0]} 
-                                absolute 
+                                accessor={'population'}
+                                backgroundColor={'transparent'}
+                                paddingLeft={'15'}
+                                center={[8, 0]}
+                                absolute
                                 style={styles.chart}
                             />
                         ) : (
                             <Text style={styles.noDataText}>No hay datos de gastos en el mes activo.</Text>
                         )}
-                        
-                        
                         <Text style={styles.sectionTitle}>Categorías</Text>
-                        
-                        {pieChartData.map((data, index) => (
+                        {pieChartData.map((data) => (
                             <View key={data.name} style={styles.row}>
-                                <View style={[styles.circle, { backgroundColor: data.color }]}/>
+                                <View style={[styles.circle, { backgroundColor: data.color }]} />
                                 <Text style={styles.name}>{data.name}</Text>
                                 <View style={styles.rightContainer}>
                                     <Text style={styles.money}>${data.population.toFixed(2)}</Text>
-                                    <Text style={styles.note}>{data.percentage}% del total</Text> 
+                                    <Text style={styles.note}>{data.percentage}% del total</Text>
                                 </View>
                             </View>
                         ))}
                     </View>
 
                     <View style={styles.card}>
-                        <Text style={styles.cardTitle}>Ingresos</Text>
-                        
-                        <Text style={styles.sectionTitle}>Totales de Ingreso ({currentMonthFormatted})</Text>
-                        
-                        
-                        {
-                            Object.entries(
-                                transacciones
-                                .filter(t => t.tipo === 'ingreso')
-                                .reduce((acc, tx) => {
-                                    acc[tx.categoria] = (acc[tx.categoria] || 0) + (parseFloat(tx.monto) || 0);
-                                    return acc;
-                                }, {})
-                            ).map(([category, amount], idx) => (
-                                <View key={category} style={styles.row}>
-                                    <View style={[styles.circle, { backgroundColor: CHART_COLORS[idx % CHART_COLORS.length] }]}/>
-                                    <Text style={styles.name}>{category}</Text>
-                                    <Text style={styles.money}>${amount.toFixed(2)}</Text>
+                        <Text style={styles.cardTitle}>Ingresos por Categoría ({currentMonthFormatted})</Text>
+                        {hasIncomeData ? (
+                            <PieChart
+                                data={incomePieData}
+                                width={screenWidth - 40}
+                                height={200}
+                                chartConfig={chartConfig}
+                                accessor={'population'}
+                                backgroundColor={'transparent'}
+                                paddingLeft={'15'}
+                                center={[8, 0]}
+                                absolute
+                                style={styles.chart}
+                            />
+                        ) : (
+                            <Text style={styles.noDataText}>No hay ingresos registrados en este mes.</Text>
+                        )}
+                        <Text style={styles.sectionTitle}>Categorías</Text>
+                        {incomePieData.map((data) => (
+                            <View key={data.name} style={styles.row}>
+                                <View style={[styles.circle, { backgroundColor: data.color }]} />
+                                <Text style={styles.name}>{data.name}</Text>
+                                <View style={styles.rightContainer}>
+                                    <Text style={styles.money}>${data.population.toFixed(2)}</Text>
+                                    <Text style={styles.note}>{data.percentage}% del total</Text>
                                 </View>
-                            ))
-                        }
-                        
+                            </View>
+                        ))}
                     </View>
                 </View>
             </ScrollView>

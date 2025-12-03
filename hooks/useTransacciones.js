@@ -22,6 +22,10 @@ export default function useTransacciones() {
         return async () => TransaccionesController.obtenerParaGraficas();
     }, []);
 
+    const getTransactionsForMonth = useMemo(() => {
+        return async (month) => TransaccionesController.obtenerTransaccionesDelMes(month);
+    }, []);
+
     return {
         ...state,
         setActiveFilter: (filter) => TransaccionesController.setActiveFilter(filter),
@@ -30,5 +34,6 @@ export default function useTransacciones() {
         editarTransaccion: (id, tx) => TransaccionesController.editar(id, tx),
         eliminarTransaccion: (id) => TransaccionesController.eliminar(id),
         getAllTransactionsForCharts,
+        getTransactionsForMonth,
     };
 }

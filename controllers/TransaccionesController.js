@@ -11,6 +11,7 @@ class TransaccionesController extends BaseController {
             transacciones: [],
             activeFilter: 'all',
             filterMonthYear: new Date().toISOString().substring(0, 7),
+            lastUpdated: Date.now(),
         };
     }
 
@@ -52,7 +53,7 @@ class TransaccionesController extends BaseController {
 
     async cargar() {
         if (!this.userId) {
-            this.state = { ...this.state, transacciones: [] };
+            this.state = { ...this.state, transacciones: [], lastUpdated: Date.now() };
             this.notifyListeners();
             return;
         }
@@ -63,7 +64,7 @@ class TransaccionesController extends BaseController {
             mesAnio: this.state.filterMonthYear,
         });
 
-        this.state = { ...this.state, transacciones };
+        this.state = { ...this.state, transacciones, lastUpdated: Date.now() };
         this.notifyListeners();
     }
 
@@ -90,6 +91,16 @@ class TransaccionesController extends BaseController {
     async obtenerParaGraficas() {
         if (!this.userId) return [];
         return this.service.obtenerTodasParaGraficas(this.userId);
+    }
+
+    async obtenerTransaccionesDelMes(mesAnio) {
+        if (!this.userId) return [];
+        const targetMonth = mesAnio || this.state.filterMonthYear;
+        return this.service.listarPorUsuario({
+            userId: this.userId,
+            tipo: 'all',
+            mesAnio: targetMonth,
+        });
     }
 }
 

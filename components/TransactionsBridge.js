@@ -19,4 +19,3 @@ export function useTransactionsBridge() {
     }
     return context;
 }
-
