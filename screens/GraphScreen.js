@@ -1,6 +1,7 @@
 import React, { useMemo, useEffect, useState } from 'react';
 import { ScrollView, View, Text, StyleSheet, Dimensions, ActivityIndicator } from 'react-native';
-import { PieChart, BarChart } from "react-native-chart-kit";
+import { PieChart } from "react-native-chart-kit";
+import { VictoryChart, VictoryGroup, VictoryBar, VictoryAxis, VictoryLegend, VictoryLabel } from 'victory-native';
 import AppHeader from "../components/AppHeader";
 import Navbar from '../components/Navbar';
 import CrudModal from "./CrudModal";
@@ -9,6 +10,7 @@ import { useTransactionsBridge } from '../components/TransactionsBridge';
 
 const CHART_COLORS = ['#0F6D66', '#4DB6AC', '#80CBC4', '#B2DFDB', '#E0F2F1', '#26A69A', '#9E9E9E', '#E57373'];
 const screenWidth = Dimensions.get("window").width;
+const chartWidth = screenWidth - 80;
 
 
 const getShortMonthName = (dateString) => {
@@ -210,19 +212,68 @@ export default function GraphScreen() {
                 
                 <View style={styles.cardSection}>
                     
-                    <View style={styles.card}>
+                    <View style={[styles.card, styles.chartCard]}>
                         <Text style={styles.cardTitle}>Gastos e Ingresos Mensuales</Text>
                         {monthlyComparison.labels.length > 0 ? (
-                            <BarChart
-                                data={monthlyComparison}
-                                width={screenWidth - 40}
-                                height={250}
-                                chartConfig={chartConfig}
-                                verticalLabelRotation={-20}
-                                showBarTops={false}
-                                fromZero={true}
-                                style={styles.chart}
-                            />
+                            <View style={styles.chartWrapper}>
+                                <VictoryChart
+                                    domainPadding={{ x: 36, y: 20 }}
+                                    height={250}
+                                    width={chartWidth}
+                                    padding={{ top: 50, bottom: 40, left: 20, right: 20 }}
+                                >
+                                    <VictoryAxis
+                                        tickValues={monthlyComparison.labels}
+                                        style={{
+                                            axis: { stroke: '#D0E4E1' },
+                                            tickLabels: { fontSize: 12, fill: '#2F4F4F' },
+                                            grid: { stroke: 'transparent' },
+                                        }}
+                                    />
+                                    <VictoryAxis
+                                        dependentAxis
+                                        tickFormat={() => '' }
+                                        style={{
+                                            axis: { stroke: 'transparent' },
+                                            tickLabels: { fill: 'transparent' },
+                                            grid: { stroke: '#E6F2F0', strokeDasharray: '4,4' },
+                                        }}
+                                    />
+                                    <VictoryLegend
+                                        x={(chartWidth / 2) - 100}
+                                        y={0}
+                                        orientation="horizontal"
+                                        gutter={20}
+                                        style={{ labels: { fontSize: 12, fill: '#2F4F4F' } }}
+                                        data={[
+                                            { name: 'Ingreso', symbol: { fill: '#00B394', type: 'square' } },
+                                            { name: 'Gasto', symbol: { fill: '#004D40', type: 'square' } },
+                                        ]}
+                                    />
+                                    <VictoryGroup offset={26}>
+                                        <VictoryBar
+                                            data={monthlyComparison.datasets[0].data.map((value, idx) => ({ x: monthlyComparison.labels[idx], y: value }))}
+                                            labels={({ datum }) => `$${datum.y.toFixed(0)}`}
+                                            style={{
+                                                data: { fill: '#00B394', width: 22 },
+                                                labels: { fill: '#14564C', fontSize: 10, fontWeight: '600' }
+                                            }}
+                                            cornerRadius={{ top: 3, bottom: 0 }}
+                                            labelComponent={<VictoryLabel dy={-8} />}
+                                        />
+                                        <VictoryBar
+                                            data={monthlyComparison.datasets[1].data.map((value, idx) => ({ x: monthlyComparison.labels[idx], y: value }))}
+                                            labels={({ datum }) => `$${datum.y.toFixed(0)}`}
+                                            style={{
+                                                data: { fill: '#004D40', width: 22 },
+                                                labels: { fill: '#062B27', fontSize: 10, fontWeight: '600' }
+                                            }}
+                                            cornerRadius={{ top: 3, bottom: 0 }}
+                                            labelComponent={<VictoryLabel dy={-8} />}
+                                        />
+                                    </VictoryGroup>
+                                </VictoryChart>
+                            </View>
                         ) : (
                             <Text style={styles.noDataText}>No hay suficientes datos en los últimos 3 meses.</Text>
                         )}
@@ -347,6 +398,13 @@ const styles = StyleSheet.create({
         shadowRadius: 8,
         shadowOffset: {width: 0, height: 2},
         elevation: 2,
+    },
+    chartCard: {
+        paddingBottom: 12,
+    },
+    chartWrapper: {
+        width: '100%',
+        alignItems: 'center',
     },
     cardTitle: {
         color: "#183236",
