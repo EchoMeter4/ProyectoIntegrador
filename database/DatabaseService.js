@@ -62,9 +62,9 @@ class DatabaseService {
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
                     id_usuario INTEGER NOT NULL,
                     nombre VARCHAR(50) NOT NULL,
-                    icono VARCHAR(64) NOT NULL,
-                    color_hex CHAR(7) NOT NULL,
                     limite_notificacion DECIMAL(18, 2) NOT NULL,
+                    year SMALLINT NOT NULL,
+                    month TINYINT NOT NULL,
                     FOREIGN KEY (id_usuario) REFERENCES usuarios(id)
                 );
             `);
