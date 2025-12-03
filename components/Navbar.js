@@ -1,7 +1,7 @@
 import {Alert, StyleSheet, Text, TouchableOpacity, View} from 'react-native';
 import {useNavigation} from "@react-navigation/native";
 
-export default function navbar({toggleModal}) {
+export default function navbar({toggleModal, currentRoute}) {
     const navigation = useNavigation();
 
     return (
@@ -9,27 +9,43 @@ export default function navbar({toggleModal}) {
             <View style={styles.bottomNav}>
                 <TouchableOpacity
                     style={styles.navItem}
-                    onPress={() => navigation.navigate('List')}
+                    onPress={() => navigation.navigate('Operaciones')}
                 >
-                    <View style={styles.iconBubble}>
+                    <View style={[styles.iconBubble, currentRoute === 'Operaciones' && styles.iconBubbleActive]}>
                         <Text style={styles.iconText}>≡</Text>
                     </View>
-                    <Text style={styles.navLabel}>Lista</Text>
+                    <Text style={[styles.navLabel, currentRoute === 'Operaciones' && styles.navLabelActive]}>Ops</Text>
                 </TouchableOpacity>
+
+                <View style={styles.divider} />
 
                 <TouchableOpacity
                     style={styles.navItem}
-                    onPress={() => navigation.navigate('Graph')}
+                    onPress={() => navigation.navigate('Dashboard')}
                 >
-                    <View style={[styles.iconBubble, styles.iconBubbleActive]}>
+                    <View style={[styles.iconBubble, currentRoute === 'Dashboard' && styles.iconBubbleActive]}>
                         <Text style={styles.iconText}>📊</Text>
                     </View>
                     <Text
-                        style={[styles.navLabel, styles.navLabelActive]}
+                        style={[styles.navLabel, currentRoute === 'Dashboard' && styles.navLabelActive]}
                     >
-                        Gráficas
+                        Dashboard
                     </Text>
                 </TouchableOpacity>
+
+                <View style={styles.divider} />
+
+                <TouchableOpacity
+                    style={styles.navItem}
+                    onPress={() => navigation.navigate('Presupuestos')}
+                >
+                    <View style={[styles.iconBubble, currentRoute === 'Presupuestos' && styles.iconBubbleActive]}>
+                        <Text style={styles.iconText}>📦</Text>
+                    </View>
+                    <Text style={[styles.navLabel, currentRoute === 'Presupuestos' && styles.navLabelActive]}>Presus</Text>
+                </TouchableOpacity>
+
+                <View style={styles.divider} />
 
                 <TouchableOpacity
                     style={styles.navItem} onPress={() => toggleModal()}
@@ -92,10 +108,12 @@ const styles = StyleSheet.create({
         flexDirection: "row",
         justifyContent: "space-between",
         alignItems: "center",
-        shadowColor: "#000",
-        shadowOpacity: 0.12,
-        shadowRadius: 8,
-        shadowOffset: {width: 0, height: 2},
-        elevation: 4,
+    },
+    divider: {
+        width: 1,
+        height: 30,
+        backgroundColor: '#D0DEDD',
+        marginHorizontal: 4,
+        alignSelf: 'center',
     },
 });

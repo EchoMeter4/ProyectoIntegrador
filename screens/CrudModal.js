@@ -16,6 +16,7 @@ import DateTimePicker from '@react-native-community/datetimepicker';
 import { Picker } from '@react-native-picker/picker';
 
 import { useTransactionsBridge } from '../components/TransactionsBridge';
+import { usePresupuestosBridge } from '../components/PresupuestosContext';
 
 const formatDateLocal = (date) => {
   if (!(date instanceof Date) || Number.isNaN(date.getTime())) {
@@ -84,6 +85,7 @@ export default function CrudModal({ visible, setVisible, operation, type, itemEd
   const [mostrarPickerMes, setMostrarPickerMes] = useState(false);
 
   const { agregarTransaccion, editarTransaccion } = useTransactionsBridge();
+  const { agregarPresupuesto, editarPresupuesto } = usePresupuestosBridge();
 
   const categoriasEjemplo = {
     gasto: ['Comida', 'Transporte', 'Renta', 'Escuela', 'Salud', 'Entretenimiento'],
@@ -154,20 +156,30 @@ export default function CrudModal({ visible, setVisible, operation, type, itemEd
       categoria: categoria,
       descripcion: nota,
       fecha: tipoActual === 'presupuesto' ? `${mesPresupuesto}-01` : fecha,
-      tipo: tipoActual
+      tipo: tipoActual,
+      year: parseInt(mesPresupuesto.substring(0,4), 10),
+      month: parseInt(mesPresupuesto.substring(5,7), 10),
     };
 
     try {
-      
-      if (operation === 'crear' || !itemEditar) {
-        await agregarTransaccion(nuevaTransaccion);
-        Alert.alert("¡Éxito!", "Se agregó correctamente a tu lista.");
+      if (tipoActual === 'presupuesto') {
+        if (operation === 'crear' || !itemEditar) {
+          await agregarPresupuesto(nuevaTransaccion);
+          Alert.alert('¡Éxito!', 'Presupuesto agregado.');
+        } else {
+          await editarPresupuesto(itemEditar.id, nuevaTransaccion);
+          Alert.alert('¡Éxito!', 'Presupuesto actualizado.');
+        }
       } else {
-        
-        await editarTransaccion(itemEditar.id, nuevaTransaccion);
-        Alert.alert("¡Éxito!", "Se actualizó correctamente.");
+        if (operation === 'crear' || !itemEditar) {
+          await agregarTransaccion(nuevaTransaccion);
+          Alert.alert('¡Éxito!', 'Se agregó correctamente a tu lista.');
+        } else {
+          await editarTransaccion(itemEditar.id, nuevaTransaccion);
+          Alert.alert('¡Éxito!', 'Se actualizó correctamente.');
+        }
       }
-      cerrarModal(); 
+      cerrarModal();
     } catch (error) {
       console.error("Error al guardar:", error);
       

@@ -1,4 +1,4 @@
-import React, {useState, useEffect} from "react"; 
+import React, {useState, useEffect, useMemo} from "react";
 import {
     Alert,
     ScrollView,
@@ -21,9 +21,10 @@ import { useTransactionsBridge } from "../components/TransactionsBridge";
 
 export default function PantallaTransacciones() {
     const [mostrarModal, setMostrarModal] = useState(false);
-    const [tipoSeleccionado, setTipoSeleccionado] = useState(null);
-    const [operacion, setOperacion] = useState("editar");
-    const [transaccionAEditar, setTransaccionAEditar] = useState(null); 
+    const [tipoSeleccionado, setTipoSeleccionado] = useState('gasto');
+    const [operacion, setOperacion] = useState("crear");
+    const [transaccionAEditar, setTransaccionAEditar] = useState(null);
+    const [categoriaFiltro, setCategoriaFiltro] = useState('all');
 
     const { presupuesto } = usePreferences();
     
@@ -65,12 +66,29 @@ export default function PantallaTransacciones() {
     }, [estaExcedido]); 
 
     
-    function alternarModal() {
-        setTipoSeleccionado(undefined);
+    function alternarModal(defaultTipo = 'gasto') {
+        setTipoSeleccionado(defaultTipo);
         setTransaccionAEditar(null);
         setOperacion("crear");
         setMostrarModal(!mostrarModal);
     }
+
+    const categoriasDisponibles = useMemo(() => {
+        const set = new Set();
+        transacciones
+            .filter(t => t.tipo !== 'presupuesto')
+            .forEach(t => {
+                if (t.categoria) set.add(t.categoria);
+            });
+        return Array.from(set).sort();
+    }, [transacciones]);
+
+    const transaccionesFiltradas = useMemo(() => {
+        return transacciones
+            .filter(t => t.tipo !== 'presupuesto')
+            .filter(t => (activeFilter === 'all' ? true : t.tipo === activeFilter))
+            .filter(t => (categoriaFiltro === 'all' ? true : t.categoria === categoriaFiltro));
+    }, [transacciones, activeFilter, categoriaFiltro]);
 
     const confirmarEliminar = (id) => {
         Alert.alert(
@@ -100,8 +118,7 @@ export default function PantallaTransacciones() {
     const tipos = [
         { label: "Gasto", value: "gasto" },
         { label: "Ingreso", value: "ingreso" },
-        { label: "Presupuesto", value: "presupuesto" },
-        { label: "Todo", value: "all" }, 
+        { label: "Todo", value: "all" },
     ];
 
     return (
@@ -115,14 +132,25 @@ export default function PantallaTransacciones() {
 
                 <View style={styles.tarjetaLista}>
                     <View style={styles.encabezadoLista}>
-                        <View style={styles.filtrosFila}>
-                            
-                            <TouchableOpacity style={styles.botonDropdown}>
-                                <Text style={styles.textoDropdown}>Categorías ▼</Text>
-                            </TouchableOpacity>
-                        </View>
+                        <Text style={styles.sectionTitle}>Filtrar por categoría</Text>
+                        <ScrollView
+                            horizontal
+                            showsHorizontalScrollIndicator={false}
+                            contentContainerStyle={styles.categoriasChips}
+                        >
+                            {['all', ...categoriasDisponibles].map((cat) => (
+                                <TouchableOpacity
+                                    key={cat}
+                                    style={[styles.chip, categoriaFiltro === cat && styles.chipActiva]}
+                                    onPress={() => setCategoriaFiltro(cat)}
+                                >
+                                    <Text style={[styles.chipText, categoriaFiltro === cat && styles.chipTextActiva]}>
+                                        {cat === 'all' ? 'Todas' : cat}
+                                    </Text>
+                                </TouchableOpacity>
+                            ))}
+                        </ScrollView>
 
-                        
                         <View style={styles.tiposSeleccionados}>
                             {tipos.map((t) => (
                                 <TouchableOpacity 
@@ -148,7 +176,7 @@ export default function PantallaTransacciones() {
                     </View>
 
                     
-                    {transacciones.length === 0 ? (
+                    {transaccionesFiltradas.length === 0 ? (
                         <View style={{padding: 40, alignItems: 'center'}}>
                             <Feather name="list" size={40} color="#ccc" />
                             <Text style={{color: '#888', marginTop: 10}}>
@@ -159,13 +187,15 @@ export default function PantallaTransacciones() {
                             <Text style={{color: '#aaa', fontSize: 12}}>Usa el botón + para agregar uno.</Text>
                         </View>
                     ) : (
-                        transacciones.map((item, idx) => (
+                        transaccionesFiltradas.map((item, idx) => (
                             <View key={item.id || idx} style={styles.fila}>
                                 <View style={{flex: 1}}>
                                     <Text style={styles.tituloTransaccion}>
-                                        {item.categoria} {etiquetaTipo(item.tipo)}
+                                        {item.categoria}
                                     </Text>
-                                    
+                                    <Text style={[styles.tipoLinea, item.tipo === 'ingreso' ? styles.tipoIngreso : styles.tipoGasto]}>
+                                        {item.tipo === 'ingreso' ? 'Ingreso' : 'Gasto'}
+                                    </Text>
                                     {item.descripcion ? (
                                         <Text style={styles.descTransaccion} numberOfLines={1}>
                                             {item.descripcion}
@@ -182,9 +212,7 @@ export default function PantallaTransacciones() {
                                             styles.montoTransaccion,
                                             item.tipo === "ingreso"
                                                 ? styles.montoIngreso
-                                                : item.tipo === "gasto"
-                                                    ? styles.montoGasto
-                                                    : styles.montoPresupuesto
+                                                : styles.montoGasto
                                         ]}
                                     >
                                         {formatCurrency(item.monto)}
@@ -206,8 +234,7 @@ export default function PantallaTransacciones() {
                 </View>
             </ScrollView>
 
-            <Navbar toggleModal={alternarModal}/>
-            
+            <Navbar toggleModal={() => alternarModal('gasto')} currentRoute="Operaciones" />
             <CrudModal
                 visible={mostrarModal}
                 setVisible={setMostrarModal}
@@ -235,7 +262,7 @@ const styles = StyleSheet.create({
     },
     tarjetaLista: {
         backgroundColor: "#fff",
-        marginTop: 0, 
+        marginTop: -20,
         marginHorizontal: 16,
         borderRadius: 16,
         paddingVertical: 14,
@@ -273,37 +300,63 @@ const styles = StyleSheet.create({
         fontWeight: "700",
         textAlign: "center",
     },
+    sectionTitle: {
+        color: VERDE,
+        fontWeight: '700',
+        marginBottom: 6,
+        marginLeft: 4,
+    },
     tiposSeleccionados: {
         flexDirection: "row",
         justifyContent: "space-between",
         marginTop: 10,
     },
-    
+    categoriasChips: {
+        flexDirection: 'row',
+        paddingVertical: 4,
+        marginBottom: 6,
+    },
+    chip: {
+        paddingHorizontal: 14,
+        paddingVertical: 6,
+        borderRadius: 999,
+        borderWidth: 1,
+        borderColor: BORDE,
+        backgroundColor: '#F4FBFB',
+        marginRight: 8,
+    },
+    chipActiva: {
+        backgroundColor: VERDE,
+        borderColor: VERDE,
+    },
+    chipText: {
+        color: '#395657',
+        fontWeight: '600',
+    },
+    chipTextActiva: {
+        color: '#fff',
+    },
     pildoraTipo: {
         flex: 1,
         alignItems: "center",
         paddingVertical: 8,
         marginHorizontal: 4,
-        borderRadius: 999,
+        borderRadius: 16,
         borderWidth: 1,
         borderColor: BORDE,
         backgroundColor: "#F6FAFA",
     },
     pildoraActiva: {
-        backgroundColor: "#FFFFFF",
-        borderColor: VERDE,
-        shadowColor: "#000",
-        shadowOpacity: 0.06,
-        shadowRadius: 6,
-        shadowOffset: { width: 0, height: 2 },
-        elevation: 2,
+        backgroundColor: "#0F6D66",
+        borderColor: "#0F6D66",
     },
     textoPildora: { 
         color: '#6B8B8B', 
-        fontWeight: '600' 
+        fontWeight: '600',
+        paddingHorizontal: 6,
     },
     textoPildoraActiva: {
-        color: VERDE,
+        color: '#FFFFFF',
         fontWeight: "700",
     },
     fila: {
@@ -319,7 +372,18 @@ const styles = StyleSheet.create({
         fontWeight: "700",
         fontSize: 15,
     },
-    descTransaccion: { 
+    tipoLinea: {
+        fontSize: 12,
+        fontWeight: '600',
+        marginBottom: 4,
+    },
+    tipoIngreso: {
+        color: '#18794e',
+    },
+    tipoGasto: {
+        color: '#b42318',
+    },
+    descTransaccion: {
         color: "#666",
         fontSize: 12,
         fontStyle: "italic",
@@ -342,9 +406,6 @@ const styles = StyleSheet.create({
     },
     montoGasto: {
         color: "#b42318",
-    },
-    montoPresupuesto: {
-        color: VERDE,
     },
     iconos: {
         flexDirection: "row",

@@ -19,8 +19,10 @@ import {
 import AppHeader from "../components/AppHeader";
 import Navbar from '../components/Navbar';
 import CrudModal from "./CrudModal";
-import {useTransactionsBridge} from '../components/TransactionsBridge';
-import {formatCurrency} from '../utils/utils';
+import { useTransactionsBridge } from '../components/TransactionsBridge';
+import { usePresupuestosBridge } from '../components/PresupuestosContext';
+import ProgressBar from '../components/ProgressBar';
+import {formatCurrency} from "../utils/utils";
 
 
 const CHART_COLORS = ['#0F6D66', '#4DB6AC', '#80CBC4', '#B2DFDB', '#E0F2F1', '#26A69A', '#9E9E9E', '#E57373'];
@@ -127,17 +129,22 @@ const useCategoryIncomeData = (transactions) => {
 
 export default function GraphScreen() {
     const [showModal, setShowModal] = useState(false);
-    const toggleModal = () => setShowModal(!showModal);
+    const [modalType, setModalType] = useState('gasto');
+    const [modalOperation, setModalOperation] = useState('crear');
+    const [editingItem, setEditingItem] = useState(null);
+    const openModal = (type = 'gasto', item = null) => {
+        setModalType(type);
+        setEditingItem(item);
+        setModalOperation(item ? 'editar' : 'crear');
+        setShowModal(true);
+    };
+    const closeModal = () => setShowModal(false);
 
-    const {
-        transacciones,
-        getAllTransactionsForCharts,
-        getTransactionsForMonth,
-        filterMonthYear,
-        lastUpdated
-    } = useTransactionsBridge();
+    const { transacciones, getTransactionsForMonth, filterMonthYear, lastUpdated } = useTransactionsBridge();
+    const { obtenerPresupuestosPorMes, lastUpdated: presupuestosUpdated } = usePresupuestosBridge();
 
     const [currentMonthTransactions, setCurrentMonthTransactions] = useState(transacciones);
+    const [currentMonthPresupuestos, setCurrentMonthPresupuestos] = useState([]);
     const [monthlyComparison, setMonthlyComparison] = useState({
         labels: [],
         datasets: []
@@ -148,9 +155,12 @@ export default function GraphScreen() {
         const fetchCurrentMonth = async () => {
             const monthData = await getTransactionsForMonth(filterMonthYear);
             setCurrentMonthTransactions(monthData);
+            const [year, month] = filterMonthYear.split('-').map(Number);
+            const presupuestos = await obtenerPresupuestosPorMes(year, month);
+            setCurrentMonthPresupuestos(presupuestos);
         };
         fetchCurrentMonth();
-    }, [filterMonthYear, getTransactionsForMonth, lastUpdated]);
+    }, [filterMonthYear, getTransactionsForMonth, lastUpdated, presupuestosUpdated]);
 
     useEffect(() => {
         const loadMonthlyWindow = async () => {
@@ -452,10 +462,39 @@ export default function GraphScreen() {
                             </View>
                         ))}
                     </View>
+
+                    <View style={styles.card}>
+                        <Text style={styles.cardTitle}>Presupuestos del mes</Text>
+                        {currentMonthPresupuestos.length === 0 ? (
+                            <Text style={styles.noDataText}>No has definido presupuestos para este mes.</Text>
+                        ) : (
+                            currentMonthPresupuestos.map((presupuesto) => {
+                                const gastoCategoria = currentMonthTransactions
+                                    .filter(tx => tx.tipo === 'gasto' && tx.categoria === presupuesto.categoria)
+                                    .reduce((acc, tx) => acc + (Number(tx.monto) || 0), 0);
+                                const progreso = Math.min(gastoCategoria / presupuesto.monto, 1);
+                                return (
+                                    <View key={presupuesto.id} style={styles.budgetRow}>
+                                        <View style={styles.budgetHeader}>
+                                            <Text style={styles.budgetCategory}>{presupuesto.categoria}</Text>
+                                            <Text style={styles.budgetAmount}>{formatCurrency(gastoCategoria)} / {formatCurrency(presupuesto.monto)}</Text>
+                                        </View>
+                                        <ProgressBar progress={progreso} danger={progreso >= 1} />
+                                    </View>
+                                );
+                            })
+                        )}
+                    </View>
                 </View>
             </ScrollView>
-            <Navbar toggleModal={toggleModal}/>
-            <CrudModal visible={showModal} setVisible={setShowModal}/>
+            <Navbar toggleModal={() => openModal('gasto')} currentRoute="Dashboard" />
+            <CrudModal
+                visible={showModal}
+                setVisible={closeModal}
+                operation={modalOperation}
+                type={modalType}
+                itemEditar={editingItem}
+            />
         </View>
     );
 }
@@ -569,5 +608,24 @@ const styles = StyleSheet.create({
     note: {
         fontSize: 12,
         color: "#6A8B90"
+    },
+    budgetRow: {
+        marginBottom: 12,
+    },
+    budgetHeader: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        marginBottom: 4,
+    },
+    budgetCategory: {
+        fontSize: 14,
+        fontWeight: '500',
+        color: '#183236',
+    },
+    budgetAmount: {
+        fontSize: 14,
+        fontWeight: '600',
+        color: '#0F6D66',
     },
 });
