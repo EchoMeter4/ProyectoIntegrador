@@ -1,30 +1,15 @@
-import React, { createContext, useState, useContext } from 'react';
+import React, { createContext, useContext } from 'react';
+import usePreferencias from '../hooks/usePreferencias';
 
 
 const PreferencesContext = createContext();
 
 
 export function PreferencesProvider({ children }) {
- 
-  const [presupuesto, setPresupuesto] = useState('0');
-  const [emailAlert, setEmailAlert] = useState(false);
-
- 
-  const savePreferences = (nuevoPresupuesto, nuevaAlerta) => {
-    setPresupuesto(nuevoPresupuesto);
-    setEmailAlert(nuevaAlerta);
-  };
+  const value = usePreferencias();
 
   return (
-    <PreferencesContext.Provider 
-      value={{ 
-        presupuesto, 
-        setPresupuesto, 
-        emailAlert, 
-        setEmailAlert,
-        savePreferences 
-      }}
-    >
+    <PreferencesContext.Provider value={value}>
       {children}
     </PreferencesContext.Provider>
   );

@@ -30,21 +30,17 @@ export default function NotificationScreen({ navigation }) {
   
 
   const guardarConfiguracion = () => {
-    
     if (!emailAlert && (!presupuesto || presupuesto === '0' || presupuesto === '')) {
       Alert.alert('Configuración incompleta', 'Activa las alertas o establece un presupuesto válido.');
       return;
     }
-    
     Keyboard.dismiss();
-
-    
-    
+    savePreferences(presupuesto, emailAlert);
     Alert.alert(
       'Configuración guardada',
       `Notificaciones: ${emailAlert ? 'ON' : 'OFF'}\nPresupuesto Global: $${presupuesto}`,
       [
-        { text: "OK", onPress: () => navigation.goBack() } 
+        { text: "OK", onPress: () => navigation.goBack() }
       ]
     );
   };

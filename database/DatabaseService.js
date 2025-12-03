@@ -47,7 +47,16 @@ class DatabaseService {
                 );
             `);
 
-            
+            await this.db.runAsync(`
+                CREATE TABLE IF NOT EXISTS preferencias_usuario (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    id_usuario INTEGER NOT NULL UNIQUE,
+                    presupuesto TEXT DEFAULT '0',
+                    email_alert INTEGER DEFAULT 0,
+                    FOREIGN KEY (id_usuario) REFERENCES usuarios(id)
+                );
+            `);
+
             await this.db.runAsync(`
                 CREATE TABLE IF NOT EXISTS presupuestos (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
