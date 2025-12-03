@@ -95,7 +95,42 @@ class UsuariosController extends BaseController {
         }
     }
     
-    
+    async recuperarPassword(identificador, nuevaPassword) {
+        try {
+            const limpio = (identificador || '').trim();
+            const nuevaClave = (nuevaPassword || '').trim();
+
+            if (!limpio) {
+                throw new Error('Ingresa tu usuario o correo.');
+            }
+            if (!nuevaClave) {
+                throw new Error('Ingresa la nueva contraseña.');
+            }
+
+            const tempUser = new Usuario({ password: nuevaClave });
+            tempUser.validarPassword();
+
+            const userRecord = limpio.includes('@')
+                ? await this.userService.getByCorreo(limpio)
+                : await this.userService.getByAlias(limpio);
+
+            if (!userRecord) {
+                throw new Error('No se encontró un usuario con esos datos.');
+            }
+
+            const updated = await this.userService.updatePassword(userRecord.id, nuevaClave);
+            if (!updated) {
+                throw new Error('No se pudo actualizar la contraseña.');
+            }
+
+            console.log(`Contraseña recuperada para el usuario ID: ${userRecord.id}`);
+            return true;
+        } catch (error) {
+            console.warn('Error al recuperar contraseña:', error);
+            throw error;
+        }
+    }
+
     async updatePassword(userId, currentPassword, newPassword) {
         try {
             

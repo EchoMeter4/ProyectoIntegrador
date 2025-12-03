@@ -15,38 +15,43 @@ import {
 
 import {useAuth} from "../components/AuthContext";
 
+const PASSWORD_REGEX = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/;
+
 export default function RecoverPasswordScreen({navigation}) {
     const [correo, setCorreo] = useState('');
+    const [nuevaPassword, setNuevaPassword] = useState('');
     const [loading, setLoading] = useState(false);
 
 
     const {recuperarPassword} = useAuth();
 
     const handleRecuperar = async () => {
-        const correoLimpio = correo.trim();
+        const identificador = correo.trim();
+        const nuevaClave = nuevaPassword.trim();
 
-
-        if (!correoLimpio) {
-            Alert.alert('Error', 'Escribe tu correo electrónico');
+        if (!identificador) {
+            Alert.alert('Error', 'Escribe tu usuario o correo electrónico');
             return;
         }
-        if (!correoLimpio.includes('@')) {
-            Alert.alert('Error', 'Ingresa un correo válido');
+        if (!nuevaClave) {
+            Alert.alert('Error', 'Ingresa la nueva contraseña.');
+            return;
+        }
+        if (!PASSWORD_REGEX.test(nuevaClave)) {
+            Alert.alert(
+                'Contraseña inválida',
+                'La contraseña debe incluir al menos 8 caracteres, una mayúscula, una minúscula y un número.'
+            );
             return;
         }
 
         try {
             setLoading(true);
-
-
-            await recuperarPassword(correoLimpio);
-
+            await recuperarPassword(identificador, nuevaClave);
             setLoading(false);
-
-
             Alert.alert(
-                'Correo Enviado',
-                'Recibirás instrucciones para restablecer tu contraseña.',
+                'Contraseña actualizada',
+                'Ya puedes iniciar sesión con tu nueva contraseña.',
                 [
                     {
                         text: 'Entendido',
@@ -54,11 +59,22 @@ export default function RecoverPasswordScreen({navigation}) {
                     }
                 ]
             );
-
         } catch (error) {
             setLoading(false);
             console.log(error);
-            Alert.alert('Error', 'Hubo un problema al enviar la solicitud.');
+            const mensaje = error?.message || '';
+
+            if (mensaje.includes('No se encontró un usuario')) {
+                Alert.alert('Usuario no encontrado', 'Verifica tu usuario o correo e intenta nuevamente.');
+                return;
+            }
+
+            if (mensaje.toLowerCase().includes('contraseña')) {
+                Alert.alert('Contraseña inválida', mensaje);
+                return;
+            }
+
+            Alert.alert('Error', mensaje || 'Hubo un problema al actualizar la contraseña.');
         }
     };
 
@@ -83,28 +99,36 @@ export default function RecoverPasswordScreen({navigation}) {
 
                 <View style={styles.card}>
                     <Text style={styles.title}>Recuperar Contraseña</Text>
-                    <Text style={styles.subtitle}>Ingresa tu correo
-                                                  electrónico</Text>
+                    <Text style={styles.subtitle}>Ingresa tu usuario o correo y define tu nueva contraseña</Text>
 
-                    <Text style={styles.label}>Correo Electrónico</Text>
+                    <Text style={styles.label}>Usuario o Correo</Text>
                     <TextInput
                         style={styles.input}
-                        placeholder="ejemplo@correo.com"
+                        placeholder="Usuario o Correo"
                         placeholderTextColor={COLORS.placeholderText}
                         value={correo}
                         onChangeText={setCorreo}
                         autoCapitalize="none"
-                        keyboardType="email-address"
+                        autoCorrect={false}
+                    />
+
+                    <Text style={styles.label}>Nueva Contraseña</Text>
+                    <TextInput
+                        style={styles.input}
+                        placeholder="Nueva contraseña"
+                        placeholderTextColor={COLORS.placeholderText}
+                        secureTextEntry
+                        value={nuevaPassword}
+                        onChangeText={setNuevaPassword}
                     />
 
                     <TouchableOpacity
-
                         style={[styles.primaryButton, loading && {backgroundColor: '#ccc'}]}
                         onPress={handleRecuperar}
                         disabled={loading}
                     >
                         <Text style={styles.primaryButtonText}>
-                            {loading ? 'Enviando...' : 'Enviar Correo'}
+                            {loading ? 'Actualizando...' : 'Restablecer Contraseña'}
                         </Text>
                     </TouchableOpacity>
 
