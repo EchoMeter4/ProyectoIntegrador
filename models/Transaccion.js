@@ -28,9 +28,15 @@ export default class Transaccion {
     }
 
     normalizarMonto() {
-        if (typeof this.monto === 'string') {
+        const numeric = Number(this.monto);
+        if (Number.isFinite(numeric)) {
+            this.monto = Number(numeric.toFixed(2));
+        } else if (typeof this.monto === 'string') {
             const limpio = this.monto.replace(/[$,\s]/g, '');
-            this.monto = limpio.length ? limpio : '0';
+            const fallback = Number(limpio);
+            this.monto = Number.isFinite(fallback) ? Number(fallback.toFixed(2)) : 0;
+        } else {
+            this.monto = 0;
         }
     }
 
@@ -47,4 +53,3 @@ export default class Transaccion {
         };
     }
 }
-

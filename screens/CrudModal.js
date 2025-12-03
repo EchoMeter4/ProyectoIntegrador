@@ -52,9 +52,29 @@ const parseMonthKey = (monthKey) => {
   return new Date(year, month - 1, 1);
 };
 
+const digitsFromCurrency = (value) => {
+  const digits = (value ?? '').toString().replace(/[^0-9]/g, '');
+  return digits === '' ? '0' : digits;
+};
+
+const formatDigitsForInput = (digits) => {
+  const normalized = digits.replace(/[^0-9]/g, '') || '0';
+  const number = parseInt(normalized, 10);
+  const cents = (number / 100).toFixed(2);
+  const [whole, decimal] = cents.split('.');
+  const withThousands = whole.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+  return `${withThousands}.${decimal}`;
+};
+
+const digitsToDecimalString = (digits) => {
+  const normalized = digits.replace(/[^0-9]/g, '') || '0';
+  return (Number(normalized) / 100).toFixed(2);
+};
+
 export default function CrudModal({ visible, setVisible, operation, type, itemEditar }) {
   
-  const [monto, setMonto] = useState('');
+  const [montoDigits, setMontoDigits] = useState('0');
+  const montoDecimal = digitsToDecimalString(montoDigits);
   const [categoria, setCategoria] = useState('');
   const [nota, setNota] = useState('');
   const [tipoActual, setTipoActual] = useState('gasto');
@@ -77,9 +97,8 @@ export default function CrudModal({ visible, setVisible, operation, type, itemEd
 
   useEffect(() => {
     if (visible) {
-      
       if (operation === 'editar' && itemEditar) {
-        setMonto(itemEditar.monto ? itemEditar.monto.toString().replace('$', '').replace(/,/g, '') : '');
+        setMontoDigits(digitsFromCurrency(String(itemEditar.monto ?? '0')));
         setCategoria(itemEditar.categoria || '');
         setNota(itemEditar.descripcion || '');
         setTipoActual(itemEditar.tipo || 'gasto');
@@ -96,8 +115,7 @@ export default function CrudModal({ visible, setVisible, operation, type, itemEd
           setMesPresupuesto(formatMonthKey(new Date()));
         }
       } else {
-        
-        setMonto('');
+        setMontoDigits('0');
         setCategoria('');
         setNota('');
         setTipoActual(type || 'gasto');
@@ -112,10 +130,10 @@ export default function CrudModal({ visible, setVisible, operation, type, itemEd
     }
   }, [visible, operation, itemEditar, type]);
 
+
   const handleGuardar = async () => {
-    
-    if (!monto || !categoria) {
-      Alert.alert("Faltan datos", "Por favor ingresa un monto y selecciona una categoría.");
+    if (Number(montoDecimal) <= 0 || !categoria) {
+      Alert.alert("Faltan datos", "Por favor ingresa un monto válido y selecciona una categoría.");
       return;
     }
 
@@ -132,7 +150,7 @@ export default function CrudModal({ visible, setVisible, operation, type, itemEd
     }
 
     const nuevaTransaccion = {
-      monto: monto,
+      monto: montoDecimal,
       categoria: categoria,
       descripcion: nota,
       fecha: tipoActual === 'presupuesto' ? `${mesPresupuesto}-01` : fecha,
@@ -199,8 +217,8 @@ export default function CrudModal({ visible, setVisible, operation, type, itemEd
                   placeholder="0.00"
                   placeholderTextColor="#ccc"
                   keyboardType="numeric"
-                  value={monto}
-                  onChangeText={setMonto}
+                  value={formatDigitsForInput(montoDigits)}
+                  onChangeText={(text) => setMontoDigits(digitsFromCurrency(text))}
                 />
               </View>
 

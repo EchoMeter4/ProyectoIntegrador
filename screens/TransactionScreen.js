@@ -11,6 +11,7 @@ import {Feather} from "@expo/vector-icons";
 import Navbar from "../components/Navbar";
 import CrudModal from "./CrudModal";
 import AppHeader from "../components/AppHeader";
+import { formatCurrency } from '../utils/utils';
 
 import { usePreferences } from "../components/PreferencesContext";
 import { useTransactionsBridge } from "../components/TransactionsBridge";
@@ -39,10 +40,9 @@ export default function PantallaTransacciones() {
     
     
     
-    const parsearMonto = (str) => {
-        if (!str) return 0;
-        
-        return parseFloat(str.toString().replace('$', '').replace(/,/g, ''));
+    const parsearMonto = (value) => {
+        const num = Number(value);
+        return Number.isFinite(num) ? num : 0;
     };
 
     const totalGastos = transacciones
@@ -187,7 +187,7 @@ export default function PantallaTransacciones() {
                                                     : styles.montoPresupuesto
                                         ]}
                                     >
-                                        {item.monto.toString().includes('$') ? item.monto : `$${item.monto}`}
+                                        {formatCurrency(item.monto)}
                                     </Text>
 
                                     <View style={styles.iconos}>

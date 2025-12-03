@@ -1,5 +1,6 @@
 import DatabaseService from './DatabaseService';
 import Transaccion from '../models/Transaccion';
+import { formatCurrency } from '../utils/utils';
 
 export default class TransaccionesService {
     constructor() {
@@ -35,7 +36,7 @@ export default class TransaccionesService {
 
         sql += ' ORDER BY id DESC';
         const filas = await db.getAllAsync(sql, params);
-        return filas.map(row => new Transaccion(row));
+        return filas.map(row => new Transaccion({ ...row, monto: Number(row.monto) }));
     }
 
     async obtenerTodasParaGraficas(userId) {
@@ -44,7 +45,7 @@ export default class TransaccionesService {
             'SELECT * FROM transacciones WHERE id_usuario = ? ORDER BY fecha ASC',
             [userId]
         );
-        return filas.map(row => new Transaccion(row));
+        return filas.map(row => new Transaccion({ ...row, monto: Number(row.monto) }));
     }
 
     async agregar(transaccion) {
@@ -94,4 +95,3 @@ export default class TransaccionesService {
         await db.runAsync('DELETE FROM transacciones WHERE id = ? AND id_usuario = ?', [id, userId]);
     }
 }
-

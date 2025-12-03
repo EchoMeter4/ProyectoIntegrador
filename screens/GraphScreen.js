@@ -1,11 +1,26 @@
-import React, { useMemo, useEffect, useState } from 'react';
-import { ScrollView, View, Text, StyleSheet, Dimensions, ActivityIndicator } from 'react-native';
-import { PieChart } from "react-native-chart-kit";
-import { VictoryChart, VictoryGroup, VictoryBar, VictoryAxis, VictoryLegend, VictoryLabel } from 'victory-native';
+import React, {useMemo, useEffect, useState} from 'react';
+import {
+    ScrollView,
+    View,
+    Text,
+    StyleSheet,
+    Dimensions,
+    ActivityIndicator
+} from 'react-native';
+import {PieChart} from "react-native-chart-kit";
+import {
+    VictoryChart,
+    VictoryGroup,
+    VictoryBar,
+    VictoryAxis,
+    VictoryLegend,
+    VictoryLabel
+} from 'victory-native';
 import AppHeader from "../components/AppHeader";
 import Navbar from '../components/Navbar';
 import CrudModal from "./CrudModal";
-import { useTransactionsBridge } from '../components/TransactionsBridge';
+import {useTransactionsBridge} from '../components/TransactionsBridge';
+import {formatCurrency} from '../utils/utils';
 
 
 const CHART_COLORS = ['#0F6D66', '#4DB6AC', '#80CBC4', '#B2DFDB', '#E0F2F1', '#26A69A', '#9E9E9E', '#E57373'];
@@ -16,9 +31,9 @@ const pieWidth = screenWidth - 80;
 
 const getShortMonthName = (dateString) => {
     if (!dateString) return '';
-    
+
     const date = new Date(dateString.substring(0, 4), dateString.substring(5, 7) - 1, 1);
-    return date.toLocaleDateString('es-ES', { month: 'short' }).replace('.', '');
+    return date.toLocaleDateString('es-ES', {month: 'short'}).replace('.', '');
 };
 
 const generateLastNMonths = (n) => {
@@ -27,8 +42,8 @@ const generateLastNMonths = (n) => {
     for (let i = 0; i < n; i++) {
         const year = date.getFullYear();
         const month = String(date.getMonth() + 1).padStart(2, '0');
-        months.unshift(`${year}-${month}`); 
-        date.setMonth(date.getMonth() - 1); 
+        months.unshift(`${year}-${month}`);
+        date.setMonth(date.getMonth() - 1);
     }
     return months;
 };
@@ -53,7 +68,7 @@ const useCategoryExpenseData = (transactions) => {
         let grandTotal = 0;
         transactions.forEach(tx => {
             if (tx.tipo === 'gasto' || tx.tipo === 'presupuesto') {
-                const amount = parseFloat(tx.monto) || 0;
+                const amount = Number(tx.monto) || 0;
                 grandTotal += amount;
                 expenseTotals[tx.categoria] = (expenseTotals[tx.categoria] || 0) + amount;
             }
@@ -63,12 +78,12 @@ const useCategoryExpenseData = (transactions) => {
         const chartData = Object.keys(expenseTotals).map((category) => {
             const amount = expenseTotals[category];
             const percentage = grandTotal > 0 ? ((amount / grandTotal) * 100).toFixed(0) : 0;
-            
+
             const dataPoint = {
                 name: category,
-                population: amount, 
-                percentage: percentage, 
-                color: CHART_COLORS[colorIndex % CHART_COLORS.length], 
+                population: amount,
+                percentage: percentage,
+                color: CHART_COLORS[colorIndex % CHART_COLORS.length],
                 legendFontColor: '#333',
                 legendFontSize: 14
             };
@@ -86,7 +101,7 @@ const useCategoryIncomeData = (transactions) => {
         let grandTotal = 0;
         transactions.forEach(tx => {
             if (tx.tipo === 'ingreso') {
-                const amount = parseFloat(tx.monto) || 0;
+                const amount = Number(tx.monto) || 0;
                 grandTotal += amount;
                 incomeTotals[tx.categoria] = (incomeTotals[tx.categoria] || 0) + amount;
             }
@@ -114,10 +129,19 @@ export default function GraphScreen() {
     const [showModal, setShowModal] = useState(false);
     const toggleModal = () => setShowModal(!showModal);
 
-    const { transacciones, getAllTransactionsForCharts, getTransactionsForMonth, filterMonthYear, lastUpdated } = useTransactionsBridge();
+    const {
+        transacciones,
+        getAllTransactionsForCharts,
+        getTransactionsForMonth,
+        filterMonthYear,
+        lastUpdated
+    } = useTransactionsBridge();
 
     const [currentMonthTransactions, setCurrentMonthTransactions] = useState(transacciones);
-    const [monthlyComparison, setMonthlyComparison] = useState({ labels: [], datasets: [] });
+    const [monthlyComparison, setMonthlyComparison] = useState({
+        labels: [],
+        datasets: []
+    });
     const [loadingMonthly, setLoadingMonthly] = useState(true);
 
     useEffect(() => {
@@ -133,7 +157,7 @@ export default function GraphScreen() {
             setLoadingMonthly(true);
             const months = generateMonthsEndingAt(filterMonthYear, 3);
             if (months.length === 0) {
-                setMonthlyComparison({ labels: [], datasets: [] });
+                setMonthlyComparison({labels: [], datasets: []});
                 setLoadingMonthly(false);
                 return;
             }
@@ -146,7 +170,7 @@ export default function GraphScreen() {
                 let ingresos = 0;
                 let gastos = 0;
                 batch.forEach(tx => {
-                    const amount = parseFloat(tx.monto) || 0;
+                    const amount = Number(tx.monto) || 0;
                     if (tx.tipo === 'ingreso') {
                         ingresos += amount;
                     } else if (tx.tipo === 'gasto') {
@@ -159,8 +183,16 @@ export default function GraphScreen() {
             setMonthlyComparison({
                 labels: months.map(getShortMonthName),
                 datasets: [
-                    { data: incomeData, color: (opacity = 1) => `rgba(0, 179, 148, ${opacity})`, label: 'Ingreso' },
-                    { data: expenseData, color: (opacity = 1) => `rgba(0, 77, 64, ${opacity})`, label: 'Gasto' },
+                    {
+                        data: incomeData,
+                        color: (opacity = 1) => `rgba(0, 179, 148, ${opacity})`,
+                        label: 'Ingreso'
+                    },
+                    {
+                        data: expenseData,
+                        color: (opacity = 1) => `rgba(0, 77, 64, ${opacity})`,
+                        label: 'Gasto'
+                    },
                 ],
             });
             setLoadingMonthly(false);
@@ -187,7 +219,10 @@ export default function GraphScreen() {
     const incomeEntries = Object.entries(incomeSummary);
 
     const [currentYear, currentMonth] = filterMonthYear.split('-');
-    const currentMonthFormatted = new Date(currentYear, currentMonth - 1).toLocaleDateString('es-ES', { month: 'long', year: 'numeric' });
+    const currentMonthFormatted = new Date(currentYear, currentMonth - 1).toLocaleDateString('es-ES', {
+        month: 'long',
+        year: 'numeric'
+    });
 
     const chartConfig = {
         backgroundGradientFrom: '#fff',
@@ -200,8 +235,9 @@ export default function GraphScreen() {
     if (loadingMonthly) {
         return (
             <View style={styles.loadingContainer}>
-                <ActivityIndicator size="large" color="#0F6D66" />
-                <Text style={styles.loadingText}>Cargando datos históricos...</Text>
+                <ActivityIndicator size="large" color="#0F6D66"/>
+                <Text style={styles.loadingText}>Cargando datos
+                                                 históricos...</Text>
             </View>
         );
     }
@@ -210,34 +246,46 @@ export default function GraphScreen() {
         <View style={styles.page}>
             <ScrollView contentContainerStyle={styles.scrollArea}>
                 <AppHeader/>
-                
+
                 <View style={styles.cardSection}>
-                    
+
                     <View style={[styles.card, styles.chartCard]}>
-                        <Text style={styles.cardTitle}>Gastos e Ingresos Mensuales</Text>
+                        <Text style={styles.cardTitle}>Gastos e Ingresos
+                                                       Mensuales</Text>
                         {monthlyComparison.labels.length > 0 ? (
                             <View style={styles.chartWrapper}>
                                 <VictoryChart
-                                    domainPadding={{ x: 36, y: 20 }}
+                                    domainPadding={{x: 36, y: 20}}
                                     height={250}
                                     width={chartWidth}
-                                    padding={{ top: 50, bottom: 40, left: 20, right: 20 }}
+                                    padding={{
+                                        top: 50,
+                                        bottom: 40,
+                                        left: 20,
+                                        right: 20
+                                    }}
                                 >
                                     <VictoryAxis
                                         tickValues={monthlyComparison.labels}
                                         style={{
-                                            axis: { stroke: '#D0E4E1' },
-                                            tickLabels: { fontSize: 12, fill: '#2F4F4F' },
-                                            grid: { stroke: 'transparent' },
+                                            axis: {stroke: '#D0E4E1'},
+                                            tickLabels: {
+                                                fontSize: 12,
+                                                fill: '#2F4F4F'
+                                            },
+                                            grid: {stroke: 'transparent'},
                                         }}
                                     />
                                     <VictoryAxis
                                         dependentAxis
-                                        tickFormat={() => '' }
+                                        tickFormat={() => ''}
                                         style={{
-                                            axis: { stroke: 'transparent' },
-                                            tickLabels: { fill: 'transparent' },
-                                            grid: { stroke: '#E6F2F0', strokeDasharray: '4,4' },
+                                            axis: {stroke: 'transparent'},
+                                            tickLabels: {fill: 'transparent'},
+                                            grid: {
+                                                stroke: '#E6F2F0',
+                                                strokeDasharray: '4,4'
+                                            },
                                         }}
                                     />
                                     <VictoryLegend
@@ -245,43 +293,87 @@ export default function GraphScreen() {
                                         y={0}
                                         orientation="horizontal"
                                         gutter={20}
-                                        style={{ labels: { fontSize: 12, fill: '#2F4F4F' } }}
+                                        style={{
+                                            labels: {
+                                                fontSize: 12,
+                                                fill: '#2F4F4F'
+                                            }
+                                        }}
                                         data={[
-                                            { name: 'Ingreso', symbol: { fill: '#00B394', type: 'square' } },
-                                            { name: 'Gasto', symbol: { fill: '#004D40', type: 'square' } },
+                                            {
+                                                name: 'Ingreso',
+                                                symbol: {
+                                                    fill: '#00B394',
+                                                    type: 'square'
+                                                }
+                                            },
+                                            {
+                                                name: 'Gasto',
+                                                symbol: {
+                                                    fill: '#004D40',
+                                                    type: 'square'
+                                                }
+                                            },
                                         ]}
                                     />
                                     <VictoryGroup offset={26}>
                                         <VictoryBar
-                                            data={monthlyComparison.datasets[0].data.map((value, idx) => ({ x: monthlyComparison.labels[idx], y: value }))}
-                                            labels={({ datum }) => `$${datum.y.toFixed(0)}`}
+                                            data={monthlyComparison.datasets[0].data.map((value, idx) => ({
+                                                x: monthlyComparison.labels[idx],
+                                                y: value
+                                            }))}
+                                            labels={({datum}) => formatCurrency(datum.y)}
                                             style={{
-                                                data: { fill: '#00B394', width: 22 },
-                                                labels: { fill: '#14564C', fontSize: 10, fontWeight: '600' }
+                                                data: {
+                                                    fill: '#00B394',
+                                                    width: 22
+                                                },
+                                                labels: {
+                                                    fill: '#14564C',
+                                                    fontSize: 10,
+                                                    fontWeight: '600'
+                                                }
                                             }}
-                                            cornerRadius={{ top: 3, bottom: 0 }}
-                                            labelComponent={<VictoryLabel dy={-8} />}
+                                            cornerRadius={{top: 3, bottom: 0}}
+                                            labelComponent={<VictoryLabel
+                                                dy={-8}
+                                            />}
                                         />
                                         <VictoryBar
-                                            data={monthlyComparison.datasets[1].data.map((value, idx) => ({ x: monthlyComparison.labels[idx], y: value }))}
-                                            labels={({ datum }) => `$${datum.y.toFixed(0)}`}
+                                            data={monthlyComparison.datasets[1].data.map((value, idx) => ({
+                                                x: monthlyComparison.labels[idx],
+                                                y: value
+                                            }))}
+                                            labels={({datum}) => formatCurrency(datum.y)}
                                             style={{
-                                                data: { fill: '#004D40', width: 22 },
-                                                labels: { fill: '#062B27', fontSize: 10, fontWeight: '600' }
+                                                data: {
+                                                    fill: '#004D40',
+                                                    width: 22
+                                                },
+                                                labels: {
+                                                    fill: '#062B27',
+                                                    fontSize: 10,
+                                                    fontWeight: '600'
+                                                }
                                             }}
-                                            cornerRadius={{ top: 3, bottom: 0 }}
-                                            labelComponent={<VictoryLabel dy={-8} />}
+                                            cornerRadius={{top: 3, bottom: 0}}
+                                            labelComponent={<VictoryLabel
+                                                dy={-8}
+                                            />}
                                         />
                                     </VictoryGroup>
                                 </VictoryChart>
                             </View>
                         ) : (
-                            <Text style={styles.noDataText}>No hay suficientes datos en los últimos 3 meses.</Text>
+                            <Text style={styles.noDataText}>No hay suficientes
+                                                            datos en los últimos
+                                                            3 meses.</Text>
                         )}
                     </View>
 
                     <View style={styles.card}>
-                        <Text style={styles.cardTitle}>Gastos por Categoría ({currentMonthFormatted})</Text>
+                        <Text style={styles.cardTitle}>Gastos por Categoría
+                                                       ({currentMonthFormatted})</Text>
                         {hasCurrentMonthData ? (
                             <PieChart
                                 data={pieChartData}
@@ -297,23 +389,32 @@ export default function GraphScreen() {
                                 style={styles.chart}
                             />
                         ) : (
-                            <Text style={styles.noDataText}>No hay datos de gastos en el mes activo.</Text>
+                            <Text style={styles.noDataText}>No hay datos de
+                                                            gastos en el mes
+                                                            activo.</Text>
                         )}
                         <Text style={styles.sectionTitle}>Categorías</Text>
                         {pieChartData.map((data) => (
                             <View key={data.name} style={styles.row}>
-                                <View style={[styles.circle, { backgroundColor: data.color }]} />
+                                <View
+                                    style={[styles.circle, {backgroundColor: data.color}]}
+                                />
                                 <Text style={styles.name}>{data.name}</Text>
                                 <View style={styles.rightContainer}>
-                                    <Text style={styles.money}>${data.population.toFixed(2)}</Text>
-                                    <Text style={styles.note}>{data.percentage}% del total</Text>
+                                    <Text
+                                        style={styles.money}
+                                    >{formatCurrency(data.population)}</Text>
+                                    <Text style={styles.note}>{data.percentage}%
+                                                                               del
+                                                                               total</Text>
                                 </View>
                             </View>
                         ))}
                     </View>
 
                     <View style={styles.card}>
-                        <Text style={styles.cardTitle}>Ingresos por Categoría ({currentMonthFormatted})</Text>
+                        <Text style={styles.cardTitle}>Ingresos por Categoría
+                                                       ({currentMonthFormatted})</Text>
                         {hasIncomeData ? (
                             <PieChart
                                 data={incomePieData}
@@ -329,16 +430,24 @@ export default function GraphScreen() {
                                 style={styles.chart}
                             />
                         ) : (
-                            <Text style={styles.noDataText}>No hay ingresos registrados en este mes.</Text>
+                            <Text style={styles.noDataText}>No hay ingresos
+                                                            registrados en este
+                                                            mes.</Text>
                         )}
                         <Text style={styles.sectionTitle}>Categorías</Text>
                         {incomePieData.map((data) => (
                             <View key={data.name} style={styles.row}>
-                                <View style={[styles.circle, { backgroundColor: data.color }]} />
+                                <View
+                                    style={[styles.circle, {backgroundColor: data.color}]}
+                                />
                                 <Text style={styles.name}>{data.name}</Text>
                                 <View style={styles.rightContainer}>
-                                    <Text style={styles.money}>${data.population.toFixed(2)}</Text>
-                                    <Text style={styles.note}>{data.percentage}% del total</Text>
+                                    <Text
+                                        style={styles.money}
+                                    >{formatCurrency(data.population)}</Text>
+                                    <Text style={styles.note}>{data.percentage}%
+                                                                               del
+                                                                               total</Text>
                                 </View>
                             </View>
                         ))}
@@ -367,7 +476,7 @@ const styles = StyleSheet.create({
         fontSize: 16,
     },
     noDataText: {
-        color: '#888', 
+        color: '#888',
         marginTop: 10,
         padding: 20,
         textAlign: 'center',

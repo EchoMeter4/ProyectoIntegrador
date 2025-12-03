@@ -38,7 +38,7 @@ class DatabaseService {
                 CREATE TABLE IF NOT EXISTS transacciones (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
                     id_usuario INTEGER NOT NULL,  
-                    monto TEXT NOT NULL,
+                    monto DECIMAL(18, 2) NOT NULL,
                     categoria TEXT NOT NULL,
                     descripcion TEXT,
                     fecha TEXT,
@@ -69,6 +69,18 @@ class DatabaseService {
                 );
             `);
             
+            await this.db.runAsync(`
+                CREATE TABLE IF NOT EXISTS transacciones_migracion_temp (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    id_usuario INTEGER NOT NULL,
+                    monto DECIMAL(18, 2) NOT NULL DEFAULT 0,
+                    categoria TEXT NOT NULL,
+                    descripcion TEXT,
+                    fecha TEXT,
+                    tipo TEXT,
+                    FOREIGN KEY (id_usuario) REFERENCES usuarios(id)
+                );
+            `);
             console.log("Tablas creadas correctamente");
         } catch (error) {
             console.error("Error creando tablas:", error);
